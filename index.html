@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Foundation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,600;1,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171C;
+    --ink-raised:#1D2128;
+    --ink-line:#2A2F38;
+    --parchment:#EDE7DA;
+    --muted:#9A9690;
+    --body-c:#C1623D;
+    --faith-c:#C9A24B;
+    --love-c:#C97B84;
+    --wealth-c:#4F8A8B;
+    --good-c:#6FAF7A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--parchment);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:32px 18px 90px;}
+  header.hero{text-align:center;margin-bottom:22px;}
+  .hero h1{
+    font-family:'Fraunces',serif;font-style:italic;font-weight:700;
+    font-size:clamp(1.9rem,6vw,2.8rem);margin:0 0 6px;letter-spacing:-0.01em;
+  }
+  .hero p{color:var(--muted);margin:0;font-size:0.92rem;}
+
+  .year-goal{max-width:600px;margin:0 auto 22px;background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:16px;padding:16px 20px;}
+  .year-goal .yg-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+  .year-goal .yg-head h3{font-family:'Fraunces',serif;font-weight:600;font-size:0.95rem;margin:0;}
+  .year-goal .yg-pct{font-family:'IBM Plex Mono',monospace;font-size:0.85rem;color:var(--wealth-c);}
+  .year-goal .yg-track{height:10px;border-radius:6px;background:rgba(255,255,255,0.06);overflow:hidden;margin-bottom:8px;}
+  .year-goal .yg-fill{height:100%;border-radius:6px;background:var(--wealth-c);transition:width .3s ease;}
+  .year-goal .yg-sub{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);flex-wrap:wrap;gap:6px;}
+  .year-goal .yg-sub input{width:90px;background:transparent;border:none;border-bottom:1px dashed var(--ink-line);color:var(--parchment);font-family:'IBM Plex Mono',monospace;font-size:0.75rem;padding:1px 0;}
+
+  .tabs{display:flex;justify-content:center;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
+  .tab-btn{background:none;border:1px solid var(--ink-line);color:var(--muted);padding:8px 18px;border-radius:999px;font-size:0.82rem;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:6px;}
+  .tab-btn.active{background:var(--ink-line);color:var(--parchment);}
+  .tab-badge{background:var(--wealth-c);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:0.68rem;font-weight:600;border-radius:999px;padding:1px 6px;}
+
+  .keystone{
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:22px;
+    background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:20px;
+    padding:18px 24px;margin:0 auto 8px;max-width:600px;
+  }
+  .keystone .stat{text-align:center;min-width:90px;}
+  .keystone .stat .num{font-family:'IBM Plex Mono',monospace;font-size:1.4rem;font-weight:600;}
+  .keystone .stat.featured .num{font-size:1.9rem;color:var(--wealth-c);}
+  .keystone .stat .label{font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;}
+  .keystone .divider{width:1px;height:34px;background:var(--ink-line);}
+
+  .balance-edit{text-align:center;font-size:0.72rem;color:var(--muted);margin-bottom:30px;}
+  .balance-edit input{width:100px;background:transparent;border:none;border-bottom:1px dashed var(--ink-line);color:var(--parchment);font-family:'IBM Plex Mono',monospace;font-size:0.78rem;padding:2px 0;text-align:right;}
+
+  .history-bar{display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .history-toggle{background:none;border:1px solid var(--ink-line);color:var(--muted);padding:8px 16px;border-radius:999px;font-size:0.8rem;cursor:pointer;font-family:'Inter',sans-serif;}
+  .history-toggle:hover{color:var(--parchment);}
+  #historyDatePicker{background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:8px;color:var(--parchment);padding:7px 10px;font-family:'IBM Plex Mono',monospace;font-size:0.82rem;}
+  .history-row{display:flex;justify-content:space-between;gap:14px;padding:5px 0;font-size:0.85rem;border-bottom:1px solid rgba(255,255,255,0.04);}
+  .history-row .v{color:var(--muted);text-align:right;}
+
+  .dots{display:flex;justify-content:center;gap:10px;margin-bottom:30px;}
+  .dots .dot{width:9px;height:9px;border-radius:50%;background:var(--ink-line);transition:background .2s;}
+
+  .pillars{display:grid;grid-template-columns:1fr;gap:16px;}
+  @media (min-width:680px){.pillars{grid-template-columns:1fr 1fr;}}
+
+  .card{background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:14px;overflow:hidden;}
+  .card .accent{height:4px;width:100%;}
+  .card .inner{padding:18px 20px 20px;}
+  .card .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;gap:10px;}
+  .card .head h2{font-family:'Fraunces',serif;font-weight:600;font-size:1.1rem;margin:0;}
+  .card .streak{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--muted);white-space:nowrap;}
+
+  .bars{display:flex;gap:4px;margin:0 0 14px;}
+  .bars .bar{flex:1;height:18px;border-radius:4px;background:rgba(255,255,255,0.06);}
+
+  .check-row{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;user-select:none;}
+  .check-row .dotbox{width:20px;height:20px;border-radius:50%;border:2px solid var(--ink-line);flex:0 0 auto;display:flex;align-items:center;justify-content:center;transition:all .15s ease;}
+  .check-row.done .dotbox{border-color:transparent;}
+  .check-row .dotbox svg{width:11px;height:11px;opacity:0;transition:opacity .15s;stroke:var(--ink);}
+  .check-row.done .dotbox svg{opacity:1;}
+  .check-row span.label{font-size:0.92rem;}
+  .check-row:not(.done) span.label{color:var(--muted);}
+
+  textarea.note{
+    width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);
+    border-radius:8px;padding:8px 10px;color:var(--parchment);font-family:'Inter',sans-serif;
+    font-size:0.84rem;resize:none;margin-top:8px;min-height:48px;
+  }
+  textarea.note::placeholder{color:#5b5851;}
+  textarea.note:focus, input:focus{outline:2px solid rgba(255,255,255,0.25);}
+
+  .wealth-row{display:flex;gap:8px;margin-bottom:6px;}
+  .subhead{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin:12px 0 6px;}
+  .subhead:first-of-type{margin-top:0;}
+  .wealth-row input{
+    flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);border-radius:8px;
+    padding:8px 10px;color:var(--parchment);font-family:'IBM Plex Mono',monospace;font-size:0.88rem;
+  }
+  .add-btn{background:var(--wealth-c);color:var(--ink);border:none;padding:8px 16px;border-radius:8px;font-size:0.82rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;flex:0 0 auto;}
+  .add-btn:hover{opacity:0.85;}
+  .pending-tag{font-size:0.68rem;color:var(--muted);font-style:italic;margin:0 0 10px;}
+  .progress-track{height:8px;border-radius:6px;background:rgba(255,255,255,0.06);overflow:hidden;margin:10px 0 6px;}
+  .progress-fill{height:100%;border-radius:6px;background:var(--wealth-c);transition:width .3s ease;}
+  .progress-label{font-size:0.75rem;color:var(--muted);display:flex;justify-content:space-between;}
+
+  .note-add-row{display:flex;gap:8px;margin-top:8px;}
+  .note-add-row input.note-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);border-radius:8px;padding:8px 10px;color:var(--parchment);font-family:'Inter',sans-serif;font-size:0.84rem;}
+  .note-add-row input.note-input::placeholder{color:#5b5851;}
+  .note-list{list-style:none;margin:8px 0 0;padding:0;}
+  .note-item{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
+  .note-item input.note-edit{flex:1;background:rgba(255,255,255,0.03);border:1px solid var(--ink-line);border-radius:8px;padding:7px 10px;color:var(--parchment);font-family:'Inter',sans-serif;font-size:0.82rem;}
+  .note-delete{background:none;border:1px solid var(--ink-line);color:var(--muted);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:0.85rem;flex:0 0 auto;}
+  .note-delete:hover{color:var(--body-c);border-color:var(--body-c);}
+
+  .reflect h3{font-family:'Fraunces',serif;font-weight:600;font-size:1rem;margin:0 0 8px;color:var(--parchment);}
+
+  .footer-row{display:flex;justify-content:center;margin-top:30px;}
+  .reset-btn{background:none;border:1px solid var(--ink-line);color:var(--muted);font-size:0.75rem;padding:8px 16px;border-radius:999px;cursor:pointer;font-family:'Inter',sans-serif;}
+  .reset-btn:hover{color:var(--parchment);border-color:var(--muted);}
+
+  .toast{
+    position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink-raised);border:1px solid var(--ink-line);color:var(--parchment);
+    padding:8px 18px;border-radius:999px;font-size:0.8rem;opacity:0;transition:all .25s ease;pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .loading{text-align:center;color:var(--muted);padding:80px 0;font-family:'IBM Plex Mono',monospace;}
+
+  .pending-section{max-width:600px;margin:0 auto;}
+  .pending-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:10px;margin-bottom:10px;gap:10px;}
+  .pending-item .info{display:flex;flex-direction:column;gap:4px;flex:1;}
+  .pending-item .info .amt{font-family:'IBM Plex Mono',monospace;font-size:1.02rem;font-weight:600;}
+  .pending-item .info .meta{font-size:0.72rem;color:var(--muted);}
+  .pending-edit{width:120px;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);border-radius:6px;color:var(--parchment);font-family:'IBM Plex Mono',monospace;font-size:0.95rem;padding:5px 8px;}
+  .pending-actions{display:flex;gap:6px;flex:0 0 auto;}
+  .confirm-btn{background:var(--wealth-c);color:var(--ink);border:none;padding:7px 14px;border-radius:8px;font-size:0.78rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;}
+  .confirm-btn:hover{opacity:0.85;}
+  .delete-btn{background:none;border:1px solid var(--ink-line);color:var(--muted);padding:7px 12px;border-radius:8px;font-size:0.78rem;cursor:pointer;font-family:'Inter',sans-serif;}
+  .delete-btn:hover{color:var(--body-c);border-color:var(--body-c);}
+  .empty-pending{text-align:center;color:var(--muted);padding:50px 0;font-size:0.9rem;}
+
+  .count-row{display:flex;align-items:center;justify-content:center;gap:14px;margin:10px 0 14px;}
+  .count-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--ink-line);background:rgba(255,255,255,0.04);color:var(--parchment);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;}
+  .count-btn:hover{background:rgba(255,255,255,0.08);}
+  .count-display{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;font-weight:600;min-width:50px;text-align:center;}
+  .target-edit{font-size:0.72rem;color:var(--muted);text-align:center;display:flex;justify-content:center;align-items:center;gap:6px;margin-top:8px;}
+  .target-edit input{width:40px;background:transparent;border:none;border-bottom:1px dashed var(--ink-line);color:var(--parchment);font-family:'IBM Plex Mono',monospace;font-size:0.78rem;padding:1px 0;text-align:center;}
+  .platform-label{font-size:0.78rem;color:var(--muted);margin-bottom:10px;}
+
+  .reading-item{border:1px solid var(--ink-line);border-radius:10px;padding:10px 14px;margin-bottom:10px;background:rgba(255,255,255,0.02);}
+  .reading-item summary{cursor:pointer;font-family:'Fraunces',serif;font-weight:600;font-size:0.98rem;list-style:none;}
+  .reading-item summary::-webkit-details-marker{display:none;}
+  .reading-item summary::before{content:'+ ';color:var(--faith-c);}
+  .reading-item[open] summary::before{content:'− ';}
+  .reading-body{margin-top:10px;}
+  .reading-body p{font-size:0.85rem;color:var(--muted);margin:0 0 10px;}
+  .read-link{font-size:0.82rem;color:var(--faith-c);text-decoration:none;font-weight:600;}
+  .read-link:hover{text-decoration:underline;}
+  .affirm-list{list-style:none;margin:0 0 4px;padding:0;}
+  .affirm-list li{font-size:0.88rem;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);line-height:1.4;}
+  .affirm-list li:last-child{border-bottom:none;}
+
+  .quick-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;}
+  .quick-btn{width:38px;height:38px;border-radius:8px;border:1px solid var(--ink-line);background:rgba(255,255,255,0.04);color:var(--parchment);font-family:'IBM Plex Mono',monospace;font-size:0.78rem;cursor:pointer;flex:0 0 auto;}
+  .quick-btn:hover{background:rgba(255,255,255,0.08);}
+  .weight-display{font-family:'IBM Plex Mono',monospace;font-size:1.3rem;font-weight:600;min-width:90px;max-width:110px;text-align:center;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);border-radius:8px;padding:8px 6px;color:var(--parchment);}
+  .weight-display::placeholder{color:#5b5851;font-size:1rem;}
+  .delta-tag{font-size:0.78rem;margin-top:8px;text-align:center;color:var(--muted);}
+  .delta-tag.good{color:var(--good-c);}
+  .delta-tag.bad{color:var(--body-c);}
+
+  .slider-row{margin-bottom:16px;}
+  .slider-row .slider-head{display:flex;justify-content:space-between;font-size:0.78rem;color:var(--muted);margin-bottom:6px;}
+  .slider-row .slider-controls{display:flex;align-items:center;gap:10px;}
+  .slider-row input[type=range]{flex:1;height:6px;-webkit-appearance:none;appearance:none;background:rgba(255,255,255,0.08);border-radius:4px;outline:none;}
+  .slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--body-c);cursor:pointer;border:2px solid var(--ink);}
+  .slider-row input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--body-c);cursor:pointer;border:2px solid var(--ink-line);}
+  .slider-row input[type=number]{width:60px;flex:0 0 auto;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);border-radius:8px;padding:6px 8px;color:var(--parchment);font-family:'IBM Plex Mono',monospace;font-size:0.85rem;}
+
+  .workout-add-row{display:flex;gap:8px;max-width:600px;margin:0 auto 20px;}
+  .workout-add-row input{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);border-radius:8px;padding:9px 12px;color:var(--parchment);font-family:'Inter',sans-serif;font-size:0.88rem;}
+  .cut-stats-card{max-width:600px;margin:0 auto 20px;}
+
+  .ring-row{display:flex;justify-content:center;gap:30px;flex-wrap:wrap;margin-top:6px;}
+  .ring-block{text-align:center;}
+  .ring-wrap{position:relative;width:120px;height:120px;margin:0 auto;}
+  .ring-wrap svg{width:120px;height:120px;}
+  .ring-center{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .ring-num{font-family:'IBM Plex Mono',monospace;font-size:1.25rem;font-weight:600;}
+  .ring-label{font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;}
+  .ring-title{font-family:'Fraunces',serif;font-weight:600;font-size:0.9rem;margin-top:10px;}
+  .ring-sub{font-size:0.75rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+
+  .food-add-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .food-add-row input{background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);border-radius:8px;padding:8px 10px;color:var(--parchment);font-family:'Inter',sans-serif;font-size:0.84rem;}
+  .food-add-row input[type=text]{flex:1;min-width:120px;}
+  .food-add-row input[type=number]{width:80px;}
+  .food-item{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;}
+  .food-info{display:flex;flex-direction:column;gap:2px;}
+  .food-name{font-size:0.88rem;}
+  .food-macros{font-size:0.75rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+
+  .save-fab{
+    position:fixed;top:16px;right:16px;width:44px;height:44px;border-radius:50%;
+    background:var(--ink-raised);border:1px solid var(--ink-line);color:var(--parchment);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:50;
+    box-shadow:0 2px 10px rgba(0,0,0,0.35);transition:transform .15s ease, background .15s ease;
+  }
+  .save-fab:hover{background:rgba(255,255,255,0.08);}
+  .save-fab:active{transform:scale(0.92);}
+  .save-fab svg{width:20px;height:20px;}
+  .save-fab.pulsing{transform:scale(1.12);}
+  #backupFab{top:68px;}
+
+  .backup-overlay{
+    position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);
+    z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .backup-card{
+    background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:16px;
+    padding:22px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto;
+  }
+  .backup-card h3{font-family:'Fraunces',serif;font-weight:600;font-size:1.1rem;margin:0 0 10px;}
+  .backup-card p{font-size:0.82rem;color:var(--muted);margin:0 0 10px;line-height:1.5;}
+  .backup-card textarea{
+    width:100%;min-height:100px;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);
+    border-radius:8px;padding:10px;color:var(--parchment);font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;resize:vertical;margin-bottom:10px;
+  }
+  .backup-card hr{border:none;border-top:1px solid var(--ink-line);margin:16px 0;}
+  .backup-actions{display:flex;gap:10px;margin-top:10px;}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">loading…</div></div>
+<div class="toast" id="toast">Saved</div>
+<button class="save-fab" id="manualSaveBtn" title="Save now">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+    <polyline points="7 3 7 8 15 8"></polyline>
+  </svg>
+</button>
+<button class="save-fab" id="backupFab" title="Backup / restore">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="7 10 12 15 17 10"></polyline>
+    <line x1="12" y1="15" x2="12" y2="3"></line>
+  </svg>
+</button>
+
+<div id="backupOverlay" class="backup-overlay" style="display:none;">
+  <div class="backup-card">
+    <h3>Backup &amp; restore</h3>
+    <p>If saving keeps failing, copy this text into Notes, email, or anywhere safe. Paste it back into the box below anytime to restore everything exactly as it was.</p>
+    <textarea id="backupOutput" readonly></textarea>
+    <button class="add-btn" id="copyBackupBtn">Copy to clipboard</button>
+    <hr>
+    <p>Restore from a backup:</p>
+    <textarea id="backupInput" placeholder="Paste your backup text here"></textarea>
+    <div class="backup-actions">
+      <button class="add-btn" id="restoreBackupBtn">Restore</button>
+      <button class="reset-btn" id="closeBackupBtn">Close</button>
+    </div>
+    <div id="restoreConfirmBox" style="display:none;margin-top:12px;">
+      <p style="color:var(--body-c);font-size:0.8rem;margin:0 0 8px;">This replaces everything currently in the app with this backup. Are you sure?</p>
+      <div class="backup-actions">
+        <button class="add-btn" id="restoreConfirmYes">Yes, replace everything</button>
+        <button class="reset-btn" id="restoreConfirmNo">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'foundation-data';
+const PILLARS = [
+  {key:'body', name:'Body', colorHex:'#C1623D'},
+  {key:'faith', name:'Faith', colorHex:'#C9A24B'},
+  {key:'love', name:'Love', colorHex:'#C97B84'},
+  {key:'wealth', name:'Wealth', colorHex:'#4F8A8B'},
+];
+const CONTENT_COMBOS = [
+  {key:'bb_ig', brand:'Ballistic Brew', platform:'Instagram', colorHex:'#3C5A99'},
+  {key:'bb_fb', brand:'Ballistic Brew', platform:'Facebook', colorHex:'#2F4373'},
+  {key:'of_ig', brand:'Onesie Fun', platform:'Instagram', colorHex:'#5B8C5A'},
+  {key:'of_fb', brand:'Onesie Fun', platform:'Facebook', colorHex:'#3F6B3E'},
+];
+const DEFAULT_CONTENT_TARGETS = {bb_ig:2, bb_fb:5, of_ig:2, of_fb:5};
+const DEFAULT_ANNUAL_GOAL = 200000;
+const DEFAULT_CUT_GOAL_WEIGHT = 185;
+const DEFAULT_CALORIE_GOAL = 1800;
+const DEFAULT_PROTEIN_GOAL = 210;
+
+const QUOTES = [
+  {text:"The unexamined life is not worth living.", author:"Socrates"},
+  {text:"Knowing yourself is the beginning of all wisdom.", author:"Aristotle"},
+  {text:"He who has a why to live can bear almost any how.", author:"Friedrich Nietzsche"},
+  {text:"You have power over your mind, not outside events.", author:"Marcus Aurelius"},
+  {text:"We suffer more in imagination than in reality.", author:"Seneca"},
+  {text:"Man is disturbed not by events, but by his opinion of events.", author:"Epictetus"},
+  {text:"Your work is going to fill a large part of your life.", author:"Steve Jobs"},
+  {text:"I have not failed. I've just found 10,000 ways that won't work.", author:"Thomas Edison"},
+  {text:"Whether you think you can or you think you can't, you're right.", author:"Henry Ford"},
+  {text:"The way to get started is to quit talking and begin doing.", author:"Walt Disney"},
+  {text:"If you really look closely, most overnight successes took a long time.", author:"Steve Jobs"},
+  {text:"Don't watch the clock; do what it does. Keep going.", author:"Sam Levenson"},
+  {text:"The biggest risk is not taking any risk.", author:"Mark Zuckerberg"},
+  {text:"Move fast and break things.", author:"Mark Zuckerberg"},
+  {text:"Ideas are easy. Implementation is hard.", author:"Guy Kawasaki"},
+  {text:"If you're not embarrassed by the first version, you've launched too late.", author:"Reid Hoffman"},
+  {text:"Done is better than perfect.", author:"Sheryl Sandberg"},
+  {text:"Your most unhappy customers are your greatest source of learning.", author:"Bill Gates"},
+  {text:"I never dreamed about success. I worked for it.", author:"Estée Lauder"},
+  {text:"Don't be afraid to give up the good to go for the great.", author:"John D. Rockefeller"},
+  {text:"The successful warrior is the average man, with laser-like focus.", author:"Bruce Lee"},
+  {text:"Quality means doing it right when no one is looking.", author:"Henry Ford"},
+];
+const FIXED_AFFIRMATIONS = [
+  "I train my body with the same discipline I bring to my business — strength compounds like capital.",
+  "I seek God first, and He orders the rest of my steps.",
+  "I show up for the people I love before I show up for anyone else.",
+  "Every product I launch is one brick in a foundation built to last generations.",
+  "I am a faithful steward of what I'm given, so I'm trusted with more.",
+];
+const ROTATING_AFFIRMATIONS = [
+  "Discomfort today is the deposit on tomorrow's strength.",
+  "I don't need permission to outwork yesterday's version of myself.",
+  "Small, consistent actions are quietly building something big.",
+  "I can hold ambition and gratitude in the same hand.",
+  "My focus is a resource — I spend it on what matters.",
+  "Setbacks are data, not verdicts.",
+  "I lead my home the way I want my business run: with integrity.",
+  "Patience is not passive — it's strength under control.",
+  "I am becoming the kind of man worth marrying.",
+  "Today's habits are tomorrow's headlines.",
+  "I don't chase validation — I chase the mission.",
+  "Rest is part of the work, not the absence of it.",
+  "I trust the process even when the results lag behind the effort.",
+  "Every 'no' is just redirection toward the right 'yes'.",
+  "I measure my life in faithfulness, not just in dollars.",
+  "Clarity comes from action, not from waiting to feel ready.",
+  "I protect my peace as fiercely as I protect my goals.",
+  "Growth feels like pressure before it feels like progress.",
+  "I'd rather be consistent than impressive.",
+  "The version of me a year from now is built today.",
+];
+const DEFAULT_STARTING_BALANCE = 9606.98;
+
+let state = null;
+let currentView = 'today';
+let historyOpen = false;
+let historyDate = null;
+let resetConfirmOpen = false;
+
+function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function shiftDate(dateStr, delta){
+  const d = new Date(dateStr+'T00:00:00');
+  d.setDate(d.getDate()+delta);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function fmtMoney(n){
+  n = Number(n)||0;
+  const sign = n < 0 ? '-' : '';
+  const abs = Math.abs(n);
+  return sign + '$' + abs.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function defaultEntry(){
+  return {
+    body:{done:false, notes:[]},
+    faith:{bible:false, prayer:false, notes:[]},
+    love:{gf:false, family:false, friends:false, notes:[]},
+    wealth:{profitEntries:[], notes:[]},
+    content:{bb_ig:0, bb_fb:0, of_ig:0, of_fb:0},
+    cut:{weight:null, bodyFat:null, workouts:{}},
+    macros:{foods:[]},
+    reflection:''
+  };
+}
+function defaultState(){
+  return { entries:{}, annualGoal: DEFAULT_ANNUAL_GOAL, startingBalance: DEFAULT_STARTING_BALANCE, contentTargets: Object.assign({}, DEFAULT_CONTENT_TARGETS), cutWorkouts: [], cutGoalWeight: DEFAULT_CUT_GOAL_WEIGHT, calorieGoal: DEFAULT_CALORIE_GOAL, proteinGoal: DEFAULT_PROTEIN_GOAL };
+}
+function migrateEntry(e){
+  if(!e.wealth) e.wealth = {};
+  if(!Array.isArray(e.wealth.profitEntries)){
+    e.wealth.profitEntries = [];
+    if(typeof e.wealth.profit === 'number' && e.wealth.profit !== 0){
+      e.wealth.profitEntries.push({id:genId(), amount:e.wealth.profit, confirmed: !!e.wealth.profitConfirmed});
+    } else if(typeof e.wealth.revenue === 'number' && e.wealth.revenue !== 0){
+      e.wealth.profitEntries.push({id:genId(), amount:e.wealth.revenue, confirmed: !!e.wealth.profitConfirmed});
+    }
+  }
+  delete e.wealth.profit;
+  delete e.wealth.profitConfirmed;
+  delete e.wealth.revenue;
+  delete e.wealth.amount;
+  delete e.wealth.amountConfirmed;
+
+  if(!e.body) e.body = {};
+  if(typeof e.body.done !== 'boolean') e.body.done = false;
+  if(!e.faith) e.faith = {};
+  if(typeof e.faith.bible !== 'boolean') e.faith.bible = false;
+  if(typeof e.faith.prayer !== 'boolean') e.faith.prayer = false;
+  if(!e.love) e.love = {};
+  if(typeof e.love.gf !== 'boolean') e.love.gf = false;
+  if(typeof e.love.family !== 'boolean') e.love.family = false;
+  if(typeof e.love.friends !== 'boolean') e.love.friends = false;
+
+  ['body','faith','love','wealth'].forEach(k=>{
+    if(!Array.isArray(e[k].notes)){
+      e[k].notes = (typeof e[k].note === 'string' && e[k].note.trim()) ? [{id:genId(), text:e[k].note}] : [];
+    }
+    delete e[k].note;
+  });
+
+  if(!e.content) e.content = {};
+  CONTENT_COMBOS.forEach(c=>{ if(typeof e.content[c.key] !== 'number') e.content[c.key] = 0; });
+
+  if(!e.cut) e.cut = {};
+  if(typeof e.cut.weight !== 'number') e.cut.weight = null;
+  if(typeof e.cut.bodyFat !== 'number') e.cut.bodyFat = null;
+  if(!e.cut.workouts || typeof e.cut.workouts !== 'object') e.cut.workouts = {};
+
+  if(!e.macros) e.macros = {};
+  if(!Array.isArray(e.macros.foods)) e.macros.foods = [];
+
+  if(typeof e.reflection !== 'string') e.reflection = '';
+  return e;
+}
+function migrateState(s){
+  if(!s.entries) s.entries = {};
+  if(typeof s.annualGoal !== 'number') s.annualGoal = DEFAULT_ANNUAL_GOAL;
+  delete s.savingsGoal;
+  if(typeof s.startingBalance !== 'number') s.startingBalance = DEFAULT_STARTING_BALANCE;
+  if(!s.contentTargets) s.contentTargets = {};
+  CONTENT_COMBOS.forEach(c=>{ if(typeof s.contentTargets[c.key] !== 'number') s.contentTargets[c.key] = DEFAULT_CONTENT_TARGETS[c.key]; });
+  if(!Array.isArray(s.cutWorkouts)) s.cutWorkouts = [];
+  if(typeof s.cutGoalWeight !== 'number') s.cutGoalWeight = DEFAULT_CUT_GOAL_WEIGHT;
+  if(typeof s.calorieGoal !== 'number') s.calorieGoal = DEFAULT_CALORIE_GOAL;
+  if(typeof s.proteinGoal !== 'number') s.proteinGoal = DEFAULT_PROTEIN_GOAL;
+  Object.keys(s.entries).forEach(d => { s.entries[d] = migrateEntry(s.entries[d]); });
+  return s;
+}
+function getEntry(dateStr){
+  if(!state.entries[dateStr]) state.entries[dateStr] = defaultEntry();
+  return state.entries[dateStr];
+}
+function primaryDone(pillarKey, entry){
+  if(!entry) return false;
+  if(pillarKey==='body') return !!entry.body.done;
+  if(pillarKey==='faith') return !!(entry.faith.bible && entry.faith.prayer);
+  if(pillarKey==='love') return !!(entry.love.gf || entry.love.family || entry.love.friends);
+  if(pillarKey==='wealth') return (entry.wealth.profitEntries||[]).length > 0;
+  return false;
+}
+function allFourDone(entry){
+  return PILLARS.every(p => primaryDone(p.key, entry));
+}
+function computeStreak(checkFn){
+  let streak = 0;
+  let d = todayStr();
+  if(!checkFn(state.entries[d])) d = shiftDate(d, -1);
+  while(checkFn(state.entries[d])){
+    streak++;
+    d = shiftDate(d, -1);
+  }
+  return streak;
+}
+function last7(){
+  const out = [];
+  let d = todayStr();
+  for(let i=0;i<7;i++){ out.unshift(d); d = shiftDate(d,-1); }
+  return out;
+}
+function cutHistory(field){
+  return Object.keys(state.entries)
+    .sort()
+    .filter(d => state.entries[d].cut && state.entries[d].cut[field] != null)
+    .map(d => ({date:d, value:state.entries[d].cut[field]}));
+}
+function previousCutValue(field, beforeDate){
+  const dates = Object.keys(state.entries).filter(d => d < beforeDate).sort().reverse();
+  for(const d of dates){
+    if(state.entries[d].cut && state.entries[d].cut[field] != null) return {date:d, value:state.entries[d].cut[field]};
+  }
+  return null;
+}
+function latestCutValue(field, uptoDate){
+  const dates = Object.keys(state.entries).filter(d => d <= uptoDate).sort().reverse();
+  for(const d of dates){
+    if(state.entries[d].cut && state.entries[d].cut[field] != null) return {date:d, value:state.entries[d].cut[field]};
+  }
+  return null;
+}
+function computeCutDelta(field, goodIfLower){
+  const today = todayStr();
+  const e = state.entries[today];
+  const todayVal = (e && e.cut) ? e.cut[field] : null;
+  if(todayVal == null) return null;
+  const prev = previousCutValue(field, today);
+  if(!prev) return null;
+  const diff = todayVal - prev.value;
+  if(diff === 0) return {diff:0, arrow:'→', good:null};
+  const isGood = goodIfLower ? diff < 0 : diff > 0;
+  return {diff, arrow: diff<0?'↓':'↑', good:isGood};
+}
+function macrosTotals(entry){
+  return (entry.macros.foods||[]).reduce((acc,f)=>{
+    acc.calories += Number(f.calories)||0;
+    acc.protein += Number(f.protein)||0;
+    return acc;
+  }, {calories:0, protein:0});
+}
+function macrosWin(entry){
+  if(!entry || !entry.macros) return false;
+  const t = macrosTotals(entry);
+  return t.calories > 0 && t.calories <= (state.calorieGoal||0) && t.protein >= (state.proteinGoal||0);
+}
+function donutRing(pct, colorHex){
+  const radius = 42, cx=50, cy=50;
+  const circumference = 2*Math.PI*radius;
+  const clamped = Math.max(0, Math.min(100, pct));
+  const offset = circumference - (clamped/100)*circumference;
+  return `
+    <svg viewBox="0 0 100 100">
+      <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10"/>
+      <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${colorHex}" stroke-width="10" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
+    </svg>
+  `;
+}
+function macroRingBlock(label, consumed, goal, unit, isCalories){
+  const pct = goal>0 ? (consumed/goal)*100 : 0;
+  const over = consumed > goal;
+  const met = consumed >= goal;
+  const colorHex = isCalories ? (over?'#C1623D':'#E0A458') : (met?'#6FAF7A':'#5B9BD5');
+  let centerVal, centerLabel;
+  if(isCalories){
+    centerVal = over ? '+'+Math.round(consumed-goal) : Math.round(goal-consumed);
+    centerLabel = over ? unit+' over' : unit+' left';
+  } else {
+    centerVal = met ? '✓' : Math.round(goal-consumed);
+    centerLabel = met ? 'goal met' : unit+' to go';
+  }
+  return `
+    <div class="ring-block">
+      <div class="ring-wrap">
+        ${donutRing(pct, colorHex)}
+        <div class="ring-center">
+          <div class="ring-num" style="color:${over && isCalories ? 'var(--body-c)' : 'var(--parchment)'}">${centerVal}</div>
+          <div class="ring-label">${centerLabel}</div>
+        </div>
+      </div>
+      <div class="ring-title">${escapeHtml(label)}</div>
+      <div class="ring-sub">${Math.round(consumed)} / ${goal} ${unit}</div>
+    </div>
+  `;
+}
+function hashStr(s){
+  let h = 0;
+  for(let i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i))|0; }
+  return Math.abs(h);
+}
+function seededRandom(seed){
+  let t = seed + 0x6D2B79F5;
+  t = Math.imul(t ^ (t>>>15), t | 1);
+  t ^= t + Math.imul(t ^ (t>>>7), t | 61);
+  return ((t ^ (t>>>14))>>>0) / 4294967296;
+}
+function pickDailyIndices(dateStr, poolSize, count){
+  const arr = Array.from({length:poolSize}, (_,i)=>i);
+  let seed = hashStr(dateStr);
+  for(let i=arr.length-1;i>0;i--){
+    seed += 1;
+    const r = seededRandom(seed);
+    const j = Math.floor(r*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr.slice(0,count);
+}
+function readingForDate(dateStr){
+  const d = new Date(dateStr+'T00:00:00');
+  const start = new Date(d.getFullYear(),0,0);
+  const doy = Math.floor((d-start)/86400000);
+  const psalm = ((doy-1)%150+150)%150 + 1;
+  const proverb = d.getDate();
+  return {psalm, proverb};
+}
+function quoteForDate(dateStr){
+  return QUOTES[hashStr(dateStr) % QUOTES.length];
+}
+function affirmationsForDate(dateStr){
+  const idx = pickDailyIndices(dateStr, ROTATING_AFFIRMATIONS.length, 5);
+  return idx.map(i=>ROTATING_AFFIRMATIONS[i]);
+}
+function totalConfirmedProfit(){
+  let sum = 0;
+  Object.values(state.entries).forEach(e=>{
+    (e.wealth.profitEntries||[]).forEach(p=>{ if(p.confirmed) sum += Number(p.amount)||0; });
+  });
+  return sum;
+}
+function totalMoney(){
+  return (state.startingBalance||0) + totalConfirmedProfit();
+}
+function pendingProfitBreakdown(){
+  let gains = 0, losses = 0;
+  Object.values(state.entries).forEach(e=>{
+    (e.wealth.profitEntries||[]).forEach(p=>{
+      if(!p.confirmed){
+        if(p.amount > 0) gains += p.amount;
+        else losses += p.amount;
+      }
+    });
+  });
+  return {gains, losses};
+}
+function pendingItems(){
+  const dates = Object.keys(state.entries).sort().reverse();
+  const items = [];
+  dates.forEach(d=>{
+    const e = state.entries[d];
+    (e.wealth.profitEntries||[]).forEach(p=>{
+      if(!p.confirmed) items.push({date:d, type:'profit', id:p.id, amount:p.amount});
+    });
+  });
+  return items;
+}
+
+const hasClaudeStorage = (typeof window.storage !== 'undefined' && window.storage !== null);
+async function storageGet(key){
+  if(hasClaudeStorage) return window.storage.get(key);
+  const raw = localStorage.getItem(key);
+  if(raw === null) throw new Error('Key not found');
+  return {key, value: raw};
+}
+async function storageSet(key, value){
+  if(hasClaudeStorage) return window.storage.set(key, value);
+  localStorage.setItem(key, value);
+  return {key, value};
+}
+async function loadData(){
+  try{
+    const res = await storageGet(STORAGE_KEY);
+    state = migrateState(JSON.parse(res.value));
+  }catch(e){
+    state = defaultState();
+    await persist(false, true);
+  }
+  render();
+}
+let saveTimer = null;
+async function doSave(showToast){
+  try{
+    await storageSet(STORAGE_KEY, JSON.stringify(state));
+    if(showToast) flashToast('Saved');
+    return true;
+  }catch(e1){
+    try{
+      await new Promise(r=>setTimeout(r, 700));
+      await storageSet(STORAGE_KEY, JSON.stringify(state));
+      if(showToast) flashToast('Saved');
+      return true;
+    }catch(e2){
+      const msg = (e2 && e2.message) ? e2.message : (e1 && e1.message) ? e1.message : 'unknown error';
+      flashToast('Save failed: ' + msg);
+      return false;
+    }
+  }
+}
+function persist(showToast=true, immediate=false){
+  if(immediate){
+    clearTimeout(saveTimer);
+    return doSave(showToast);
+  }
+  clearTimeout(saveTimer);
+  return new Promise((resolve)=>{
+    saveTimer = setTimeout(async ()=>{
+      const ok = await doSave(showToast);
+      resolve(ok);
+    }, 500);
+  });
+}
+let toastTimer;
+function flashToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1400);
+}
+function checkSvg(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+}
+function renderBars(pillarKey, colorHex){
+  const days = last7();
+  return '<div class="bars">' + days.map(d=>{
+    const filled = primaryDone(pillarKey, state.entries[d]);
+    return '<div class="bar" style="background:'+(filled?colorHex:'rgba(255,255,255,0.06)')+'"></div>';
+  }).join('') + '</div>';
+}
+function renderContentBars(key, colorHex, target){
+  const days = last7();
+  return '<div class="bars">' + days.map(d=>{
+    const e = state.entries[d];
+    const count = e && e.content ? (Number(e.content[key])||0) : 0;
+    const filled = target>0 && count>=target;
+    return '<div class="bar" style="background:'+(filled?colorHex:'rgba(255,255,255,0.06)')+'"></div>';
+  }).join('') + '</div>';
+}
+function renderNoteSection(pillarKey, entry, placeholder){
+  const notes = entry[pillarKey].notes || [];
+  return `
+    <div class="note-add-row">
+      <input type="text" class="note-input" data-note-pillar="${pillarKey}" placeholder="${escapeHtml(placeholder)}">
+      <button class="add-btn" data-note-add="${pillarKey}">Add</button>
+    </div>
+    ${notes.length ? `<ul class="note-list">
+      ${notes.map(n=>`
+        <li class="note-item">
+          <input type="text" class="note-edit" data-note-edit="${pillarKey}|${n.id}" value="${escapeHtml(n.text)}">
+          <button class="note-delete" data-note-delete="${pillarKey}|${n.id}" title="Delete">✕</button>
+        </li>
+      `).join('')}
+    </ul>` : ''}
+  `;
+}
+
+function render(){
+  const today = todayStr();
+  const entry = getEntry(today);
+  const keystoneStreak = computeStreak(allFourDone);
+  const money = totalMoney();
+  const pending = pendingItems();
+
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="wrap">
+      <header class="hero">
+        <h1>The Foundation</h1>
+        <p>Built daily, brick by brick.</p>
+      </header>
+
+      ${renderYearGoal()}
+
+      <div class="tabs">
+        <button class="tab-btn ${currentView==='today'?'active':''}" id="tabToday">Today</button>
+        <button class="tab-btn ${currentView==='content'?'active':''}" id="tabContent">Content</button>
+        <button class="tab-btn ${currentView==='bread'?'active':''}" id="tabBread">Daily Bread</button>
+        <button class="tab-btn ${currentView==='cut'?'active':''}" id="tabCut">Cut Process</button>
+        <button class="tab-btn ${currentView==='macros'?'active':''}" id="tabMacros">Macros</button>
+        <button class="tab-btn ${currentView==='pending'?'active':''}" id="tabPending">Pending ${pending.length>0 ? '<span class="tab-badge">'+pending.length+'</span>' : ''}</button>
+      </div>
+
+      ${(currentView === 'today' || currentView === 'pending') ? `
+      <div class="keystone">
+        <div class="stat featured">
+          <div class="num">${fmtMoney(money)}</div>
+          <div class="label">Total money</div>
+        </div>
+        <div class="divider"></div>
+        <div class="stat">
+          <div class="num">${keystoneStreak}</div>
+          <div class="label">All-4 streak</div>
+        </div>
+        <div class="divider"></div>
+        <div class="stat">
+          <div class="num" style="font-size:1rem;">${new Date(today+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'})}</div>
+          <div class="label">Today</div>
+        </div>
+      </div>
+      <div class="balance-edit">Starting balance: $<input type="number" step="0.01" id="balanceInput" value="${state.startingBalance}"></div>
+      ` : ''}
+
+      ${currentView === 'today' ? renderTodayView(entry) : currentView === 'content' ? renderContentView(entry) : currentView === 'bread' ? renderBreadView() : currentView === 'cut' ? renderCutView(entry) : currentView === 'macros' ? renderMacrosView(entry) : renderPendingView(pending)}
+    </div>
+  `;
+
+  attachHandlers(entry);
+}
+
+function renderYearGoal(){
+  const money = totalMoney();
+  const goal = state.annualGoal || 0;
+  const pct = goal>0 ? Math.min(100, Math.round((money/goal)*100)) : 0;
+  const now = new Date();
+  const yearEnd = new Date(now.getFullYear(), 11, 31);
+  const daysLeft = Math.max(0, Math.ceil((yearEnd - now)/86400000));
+  return `
+    <div class="year-goal">
+      <div class="yg-head"><h3>${now.getFullYear()} goal</h3><div class="yg-pct">${pct}%</div></div>
+      <div class="yg-track"><div class="yg-fill" style="width:${pct}%"></div></div>
+      <div class="yg-sub">
+        <span>${fmtMoney(money)} of $<input type="number" min="0" step="1000" id="annualGoalInput" value="${goal}"></span>
+        <span>${daysLeft} days left in ${now.getFullYear()}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderHistoryBar(){
+  let panel = `
+    <div class="history-bar">
+      <button class="history-toggle" id="historyToggle">📅 ${historyOpen ? 'Hide calendar' : 'Look back on a day'}</button>
+      ${historyOpen ? `<input type="date" id="historyDatePicker" max="${todayStr()}" value="${historyDate||''}">` : ''}
+    </div>
+  `;
+  if(historyOpen && historyDate){
+    panel += renderHistoryCard(historyDate);
+  }
+  return panel;
+}
+function renderBreadSnippet(dateStr){
+  const {psalm, proverb} = readingForDate(dateStr);
+  const quote = quoteForDate(dateStr);
+  const dayAffirmations = affirmationsForDate(dateStr);
+  const psalmLink = `https://www.biblegateway.com/passage/?search=Psalm+${psalm}&version=ESV`;
+  const proverbLink = `https://www.biblegateway.com/passage/?search=Proverbs+${proverb}&version=ESV`;
+  return `
+    <div class="card" style="margin-bottom:24px;">
+      <div class="accent" style="background:var(--faith-c);"></div>
+      <div class="inner">
+        <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:0.95rem;margin:0 0 10px;">That day's Daily Bread</h3>
+        <div class="history-row">
+          <span>Reading</span>
+          <span class="v"><a href="${psalmLink}" target="_blank" rel="noopener" class="read-link">Psalm ${psalm}</a> · <a href="${proverbLink}" target="_blank" rel="noopener" class="read-link">Proverbs ${proverb}</a></span>
+        </div>
+        <div style="margin-top:10px;font-size:0.85rem;font-style:italic;">"${escapeHtml(quote.text)}" <span style="color:var(--muted);font-style:normal;">— ${escapeHtml(quote.author)}</span></div>
+        <div class="subhead" style="margin-top:12px;">That day's affirmations</div>
+        <ul class="affirm-list">
+          ${dayAffirmations.map(a=>`<li>${escapeHtml(a)}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+function renderHistoryCard(dateStr){
+  const e = state.entries[dateStr];
+  const dateLabel = new Date(dateStr+'T00:00:00').toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+  if(!e){
+    return `
+      <div class="card" style="margin-bottom:16px;"><div class="inner"><h3 style="font-family:'Fraunces',serif;margin:0 0 6px;">${dateLabel}</h3><p style="color:var(--muted);font-size:0.85rem;margin:0;">Nothing logged that day.</p></div></div>
+      ${renderBreadSnippet(dateStr)}
+    `;
+  }
+  const yesNo = b => b ? '✓ yes' : '— no';
+  const profitEntries = e.wealth.profitEntries||[];
+  const profitLines = profitEntries.length
+    ? profitEntries.map(p=> fmtMoney(p.amount)+(p.confirmed?' (confirmed)':' (pending)')).join(', ')
+    : '—';
+  const contentLines = CONTENT_COMBOS.map(c=> escapeHtml(c.brand+' '+c.platform)+': '+(e.content&&e.content[c.key]?e.content[c.key]:0)).join(' · ');
+  const notes = ['body','faith','love','wealth'].flatMap(k=>(e[k].notes||[]).map(n=>n.text)).filter(Boolean).map(escapeHtml).join(' · ');
+  return `
+    <div class="card" style="margin-bottom:16px;">
+      <div class="inner">
+        <h3 style="font-family:'Fraunces',serif;margin:0 0 12px;">${dateLabel}</h3>
+        <div class="history-row"><span>Trained</span><span class="v">${yesNo(e.body.done)}</span></div>
+        <div class="history-row"><span>Scripture / Prayer</span><span class="v">${yesNo(e.faith.bible)} / ${yesNo(e.faith.prayer)}</span></div>
+        <div class="history-row"><span>Love (her / family / friends)</span><span class="v">${yesNo(e.love.gf)} / ${yesNo(e.love.family)} / ${yesNo(e.love.friends)}</span></div>
+        <div class="history-row"><span>Profit logged</span><span class="v">${escapeHtml(profitLines)}</span></div>
+        <div class="history-row" style="align-items:flex-start;"><span>Content posted</span><span class="v" style="text-align:right;">${contentLines}</span></div>
+        ${e.reflection ? `<div style="margin-top:10px;font-size:0.85rem;color:var(--parchment);"><em>"${escapeHtml(e.reflection)}"</em></div>` : ''}
+        ${notes ? `<div style="margin-top:8px;font-size:0.8rem;color:var(--muted);">Notes: ${notes}</div>` : ''}
+      </div>
+    </div>
+    ${renderBreadSnippet(dateStr)}
+  `;
+}
+
+function renderTodayView(entry){
+  return `
+      ${renderHistoryBar()}
+      <div class="dots">
+        ${PILLARS.map(p=>`<div class="dot" style="background:${primaryDone(p.key,entry)?p.colorHex:'#2A2F38'}"></div>`).join('')}
+      </div>
+
+      <div class="pillars">
+        ${renderBodyCard(entry)}
+        ${renderFaithCard(entry)}
+        ${renderLoveCard(entry)}
+        ${renderWealthCard(entry)}
+      </div>
+
+      <div class="card reflect" style="margin-top:16px;">
+        <div class="accent" style="background:linear-gradient(90deg, var(--body-c), var(--faith-c), var(--love-c), var(--wealth-c));"></div>
+        <div class="inner">
+          <h3>Today's reflection</h3>
+          <textarea class="note" id="reflection" placeholder="One sentence on how today went...">${entry.reflection||''}</textarea>
+        </div>
+      </div>
+
+      <div class="footer-row">
+        ${resetConfirmOpen ? `
+          <div style="text-align:center;">
+            <p style="color:var(--body-c);font-size:0.8rem;margin:0 0 8px;">This clears every logged day, your balance, and your year goal. Are you sure?</p>
+            <div class="backup-actions">
+              <button class="add-btn" id="resetConfirmYes">Yes, reset everything</button>
+              <button class="reset-btn" id="resetConfirmNo">Cancel</button>
+            </div>
+          </div>
+        ` : `<button class="reset-btn" id="resetBtn">Reset all data</button>`}
+      </div>
+  `;
+}
+
+function renderContentView(entry){
+  const totalToday = CONTENT_COMBOS.reduce((s,c)=> s + (Number(entry.content[c.key])||0), 0);
+  const totalTarget = CONTENT_COMBOS.reduce((s,c)=> s + (Number(state.contentTargets[c.key])||0), 0);
+  return `
+    <p class="pending-tag" style="text-align:center;margin-bottom:18px;">Posted ${totalToday} of ${totalTarget} videos today across both pages.</p>
+    <div class="pillars">
+      ${CONTENT_COMBOS.map(c=>renderContentCard(c, entry)).join('')}
+    </div>
+  `;
+}
+function renderContentCard(combo, entry){
+  const count = Number(entry.content[combo.key])||0;
+  const target = Number(state.contentTargets[combo.key])||0;
+  const pct = target>0 ? Math.min(100, Math.round((count/target)*100)) : 0;
+  const streak = computeStreak(e=>{
+    if(!e || !e.content) return false;
+    return target>0 && (Number(e.content[combo.key])||0) >= target;
+  });
+  return `
+    <div class="card">
+      <div class="accent" style="background:${combo.colorHex};"></div>
+      <div class="inner">
+        <div class="head">
+          <h2>${combo.brand}</h2>
+          <div class="streak">${streak>0?'🔥 '+streak+'d':'—'}</div>
+        </div>
+        <div class="platform-label">${combo.platform}</div>
+        ${renderContentBars(combo.key, combo.colorHex, target)}
+        <div class="count-row">
+          <button class="count-btn" data-content-dec="${combo.key}">−</button>
+          <div class="count-display">${count}</div>
+          <button class="count-btn" data-content-inc="${combo.key}">+</button>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${combo.colorHex};"></div></div>
+        <div class="target-edit">Target: <input type="number" min="0" data-content-target="${combo.key}" value="${target}"> /day</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderBreadView(){
+  const today = todayStr();
+  const {psalm, proverb} = readingForDate(today);
+  const quote = quoteForDate(today);
+  const dailyAffirmations = affirmationsForDate(today);
+  const psalmLink = `https://www.biblegateway.com/passage/?search=Psalm+${psalm}&version=ESV`;
+  const proverbLink = `https://www.biblegateway.com/passage/?search=Proverbs+${proverb}&version=ESV`;
+
+  return `
+    <div class="pending-section">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="accent" style="background:var(--faith-c);"></div>
+        <div class="inner">
+          <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:1rem;margin:0 0 12px;">Today's reading</h3>
+          <p style="font-size:0.78rem;color:var(--muted);margin:0 0 14px;">Scripture text isn't reproduced here for copyright reasons — tap through to read the full ESV chapter.</p>
+          <details class="reading-item">
+            <summary>Psalm ${psalm}</summary>
+            <div class="reading-body">
+              <p>Sit with this chapter before the day gets loud.</p>
+              <a href="${psalmLink}" target="_blank" rel="noopener" class="read-link">Read Psalm ${psalm} on BibleGateway (ESV) →</a>
+            </div>
+          </details>
+          <details class="reading-item">
+            <summary>Proverbs ${proverb}</summary>
+            <div class="reading-body">
+              <p>Practical wisdom to carry into today's decisions.</p>
+              <a href="${proverbLink}" target="_blank" rel="noopener" class="read-link">Read Proverbs ${proverb} on BibleGateway (ESV) →</a>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="accent" style="background:var(--wealth-c);"></div>
+        <div class="inner">
+          <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:1rem;margin:0 0 12px;">Quote of the day</h3>
+          <p style="font-family:'Fraunces',serif;font-style:italic;font-size:1.05rem;margin:0 0 8px;line-height:1.5;">"${escapeHtml(quote.text)}"</p>
+          <p style="font-size:0.8rem;color:var(--muted);margin:0;">— ${escapeHtml(quote.author)}</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="accent" style="background:var(--love-c);"></div>
+        <div class="inner">
+          <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:1rem;margin:0 0 4px;">Affirmations</h3>
+          <div class="subhead">Core — every day</div>
+          <ul class="affirm-list">
+            ${FIXED_AFFIRMATIONS.map(a=>`<li>${escapeHtml(a)}</li>`).join('')}
+          </ul>
+          <div class="subhead">Today's pick</div>
+          <ul class="affirm-list">
+            ${dailyAffirmations.map(a=>`<li>${escapeHtml(a)}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function renderCutView(entry){
+  const today = todayStr();
+  const hist = cutHistory('weight');
+  const startWeight = hist.length ? hist[0].value : null;
+  const latestW = latestCutValue('weight', today);
+  const displayWeight = entry.cut.weight != null ? entry.cut.weight : (latestW ? latestW.value : null);
+  const goal = state.cutGoalWeight || 0;
+  const losingIsGood = (startWeight != null) ? (goal < startWeight) : true;
+  let pct = 0;
+  if(startWeight != null && displayWeight != null && startWeight !== goal){
+    pct = Math.max(0, Math.min(100, Math.round(((startWeight - displayWeight) / (startWeight - goal)) * 100)));
+  } else if(startWeight != null && displayWeight != null && startWeight === goal){
+    pct = displayWeight === goal ? 100 : 0;
+  }
+  const wDelta = computeCutDelta('weight', losingIsGood);
+  const bfDelta = computeCutDelta('bodyFat', true);
+
+  return `
+    <div class="card cut-stats-card">
+      <div class="accent" style="background:var(--body-c);"></div>
+      <div class="inner">
+        <div class="subhead" style="margin-top:0;">Weight ${entry.cut.weight==null ? '<span style="font-style:italic;">— not weighed today</span>' : ''}</div>
+        <div class="quick-row">
+          <button class="quick-btn" data-weight-delta="-1">−1</button>
+          <button class="quick-btn" data-weight-delta="-0.5">−.5</button>
+          <input type="number" step="0.1" id="weightInput" class="weight-display" placeholder="—" value="${entry.cut.weight!=null?entry.cut.weight:''}">
+          <button class="quick-btn" data-weight-delta="0.5">+.5</button>
+          <button class="quick-btn" data-weight-delta="1">+1</button>
+        </div>
+        ${wDelta ? `<div class="delta-tag ${wDelta.good===true?'good':wDelta.good===false?'bad':''}">${wDelta.arrow} ${Math.abs(wDelta.diff).toFixed(1)} lb since last weigh-in</div>` : ''}
+        <div class="progress-track" style="margin-top:14px;"><div class="progress-fill" style="width:${pct}%;background:var(--body-c);"></div></div>
+        <div class="progress-label"><span>${displayWeight!=null? displayWeight+' lb':'—'} (exact)</span><span>Goal: <input type="number" min="0" step="1" id="cutGoalInput" value="${goal}"> lb</span></div>
+
+        <div class="subhead">Body fat % (estimate)</div>
+        <div class="quick-row">
+          <input type="number" step="0.1" id="bodyFatInput" class="weight-display" placeholder="—" value="${entry.cut.bodyFat!=null?entry.cut.bodyFat:''}">
+          <span style="color:var(--muted);font-size:0.85rem;">%</span>
+        </div>
+        ${bfDelta ? `<div class="delta-tag ${bfDelta.good===true?'good':bfDelta.good===false?'bad':''}">${bfDelta.arrow} ${Math.abs(bfDelta.diff).toFixed(1)}% since last check</div>` : ''}
+      </div>
+    </div>
+
+    <div class="workout-add-row">
+      <input type="text" id="newWorkoutInput" placeholder="Add a workout to track (e.g. Bench Press)">
+      <button class="add-btn" id="addWorkoutBtn">Add</button>
+    </div>
+
+    <div class="pillars">
+      ${state.cutWorkouts.map(w=>renderWorkoutCard(w, entry)).join('')}
+    </div>
+    ${state.cutWorkouts.length===0 ? '<p style="text-align:center;color:var(--muted);font-size:0.85rem;margin-top:20px;">No workouts yet — add your first lift above.</p>' : ''}
+  `;
+}
+function renderWorkoutCard(workout, entry){
+  const log = entry.cut.workouts[workout.id] || {weight:0, reps:0};
+  return `
+    <div class="card">
+      <div class="accent" style="background:var(--body-c);"></div>
+      <div class="inner">
+        <div class="head">
+          <h2>${escapeHtml(workout.name)}</h2>
+          <button class="note-delete" data-workout-delete="${workout.id}" title="Remove this workout">✕</button>
+        </div>
+        <div class="slider-row">
+          <div class="slider-head"><span>Weight</span><span>${log.weight} lb</span></div>
+          <div class="slider-controls">
+            <input type="range" min="0" max="1000" step="5" data-slider="${workout.id}|weight" value="${log.weight}">
+            <input type="number" min="0" max="1000" data-num="${workout.id}|weight" value="${log.weight}">
+          </div>
+        </div>
+        <div class="slider-row">
+          <div class="slider-head"><span>Reps</span><span>${log.reps}</span></div>
+          <div class="slider-controls">
+            <input type="range" min="0" max="15" step="1" data-slider="${workout.id}|reps" value="${log.reps}">
+            <input type="number" min="0" max="15" data-num="${workout.id}|reps" value="${log.reps}">
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function renderMacrosView(entry){
+  const totals = macrosTotals(entry);
+  const calorieGoal = state.calorieGoal || 0;
+  const proteinGoal = state.proteinGoal || 0;
+  const win = macrosWin(entry);
+  const streak = computeStreak(e => e ? macrosWin(e) : false);
+  const foods = entry.macros.foods || [];
+
+  return `
+    <div class="card cut-stats-card">
+      <div class="accent" style="background:var(--wealth-c);"></div>
+      <div class="inner">
+        <div class="head" style="margin-bottom:6px;">
+          <h2>Today's macros</h2>
+          <div class="streak">${streak>0?'🔥 '+streak+'d':'—'}</div>
+        </div>
+        ${win ? '<div class="delta-tag good" style="margin-bottom:10px;">🎉 Macro goals hit today</div>' : ''}
+        <div class="ring-row">
+          ${macroRingBlock('Calories', totals.calories, calorieGoal, 'cal', true)}
+          ${macroRingBlock('Protein', totals.protein, proteinGoal, 'g', false)}
+        </div>
+        <div class="goal-edit" style="justify-content:center;margin-top:16px;">
+          Calorie goal: <input type="number" min="0" id="calorieGoalInput" value="${calorieGoal}">
+          &nbsp;·&nbsp; Protein goal: <input type="number" min="0" id="proteinGoalInput" value="${proteinGoal}">g
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="max-width:600px;margin:0 auto;">
+      <div class="accent" style="background:var(--wealth-c);"></div>
+      <div class="inner">
+        <div class="subhead" style="margin-top:0;">Log food</div>
+        <div class="food-add-row">
+          <input type="text" id="foodNameInput" placeholder="Name (optional)">
+          <input type="number" min="0" id="foodCalInput" placeholder="Cal">
+          <input type="number" min="0" id="foodProteinInput" placeholder="Protein g">
+          <button class="add-btn" id="addFoodBtn">Add</button>
+        </div>
+        ${foods.length ? `<ul class="note-list" style="margin-top:14px;">
+          ${foods.map(f=>`
+            <li class="food-item">
+              <div class="food-info">
+                <span class="food-name">${escapeHtml(f.name || 'Food')}</span>
+                <span class="food-macros">${Math.round(f.calories)||0} cal · ${Math.round(f.protein)||0}g protein</span>
+              </div>
+              <button class="note-delete" data-food-delete="${f.id}" title="Delete">✕</button>
+            </li>
+          `).join('')}
+        </ul>` : '<p style="text-align:center;color:var(--muted);font-size:0.85rem;margin-top:16px;">Nothing logged yet today.</p>'}
+      </div>
+    </div>
+  `;
+}
+function renderPendingView(pending){
+  const {gains, losses} = pendingProfitBreakdown();
+  const projected = totalMoney() + gains + losses;
+  const summary = `
+    <div class="keystone" style="margin-bottom:24px;">
+      <div class="stat">
+        <div class="num" style="color:var(--wealth-c);">+${fmtMoney(gains)}</div>
+        <div class="label">Pending profit</div>
+      </div>
+      <div class="divider"></div>
+      <div class="stat">
+        <div class="num" style="color:var(--body-c);">${fmtMoney(losses)}</div>
+        <div class="label">Pending losses</div>
+      </div>
+      <div class="divider"></div>
+      <div class="stat featured">
+        <div class="num">${fmtMoney(projected)}</div>
+        <div class="label">Projected balance</div>
+      </div>
+    </div>
+  `;
+  if(pending.length===0){
+    return `<div class="pending-section">${summary}<div class="empty-pending">Nothing pending — every dollar you've logged is confirmed.</div></div>`;
+  }
+  return `
+    <div class="pending-section">
+      ${summary}
+      <p class="pending-tag" style="text-align:center;margin-bottom:18px;">Edit the amount, delete it if it was a mistake, or approve it once the money actually lands.</p>
+      ${pending.map(item=>{
+        const dateLabel = new Date(item.date+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
+        return `
+          <div class="pending-item">
+            <div class="info">
+              <input type="number" step="0.01" class="pending-edit" data-edit="${item.date}|${item.id}" value="${item.amount}">
+              <div class="meta">Profit · ${dateLabel}</div>
+            </div>
+            <div class="pending-actions">
+              <button class="confirm-btn" data-confirm="${item.date}|${item.id}">Approve</button>
+              <button class="delete-btn" data-delete="${item.date}|${item.id}">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderBodyCard(entry){
+  const streak = computeStreak(e=>primaryDone('body',e));
+  return `
+    <div class="card">
+      <div class="accent" style="background:var(--body-c);"></div>
+      <div class="inner">
+        <div class="head">
+          <h2>Body</h2>
+          <div class="streak">${streak>0?'🔥 '+streak+'d':'—'}</div>
+        </div>
+        ${renderBars('body','#C1623D')}
+        <div class="check-row ${entry.body.done?'done':''}" data-toggle="body.done">
+          <div class="dotbox" style="background:${entry.body.done?'var(--body-c)':'transparent'}">${checkSvg()}</div>
+          <span class="label">Trained today</span>
+        </div>
+        <div class="subhead">Notes</div>
+        ${renderNoteSection('body', entry, 'Lifts, run, notes...')}
+      </div>
+    </div>
+  `;
+}
+function renderFaithCard(entry){
+  const streak = computeStreak(e=>primaryDone('faith',e));
+  return `
+    <div class="card">
+      <div class="accent" style="background:var(--faith-c);"></div>
+      <div class="inner">
+        <div class="head">
+          <h2>Faith</h2>
+          <div class="streak">${streak>0?'🔥 '+streak+'d':'—'}</div>
+        </div>
+        ${renderBars('faith','#C9A24B')}
+        <div class="check-row ${entry.faith.bible?'done':''}" data-toggle="faith.bible">
+          <div class="dotbox" style="background:${entry.faith.bible?'var(--faith-c)':'transparent'}">${checkSvg()}</div>
+          <span class="label">Read scripture</span>
+        </div>
+        <div class="check-row ${entry.faith.prayer?'done':''}" data-toggle="faith.prayer">
+          <div class="dotbox" style="background:${entry.faith.prayer?'var(--faith-c)':'transparent'}">${checkSvg()}</div>
+          <span class="label">Prayed</span>
+        </div>
+        <div class="subhead">Notes</div>
+        ${renderNoteSection('faith', entry, 'Verse, reflection...')}
+      </div>
+    </div>
+  `;
+}
+function renderLoveCard(entry){
+  const streak = computeStreak(e=>primaryDone('love',e));
+  return `
+    <div class="card">
+      <div class="accent" style="background:var(--love-c);"></div>
+      <div class="inner">
+        <div class="head">
+          <h2>Love</h2>
+          <div class="streak">${streak>0?'🔥 '+streak+'d':'—'}</div>
+        </div>
+        ${renderBars('love','#C97B84')}
+        <div class="check-row ${entry.love.gf?'done':''}" data-toggle="love.gf">
+          <div class="dotbox" style="background:${entry.love.gf?'var(--love-c)':'transparent'}">${checkSvg()}</div>
+          <span class="label">Quality time with her</span>
+        </div>
+        <div class="check-row ${entry.love.family?'done':''}" data-toggle="love.family">
+          <div class="dotbox" style="background:${entry.love.family?'var(--love-c)':'transparent'}">${checkSvg()}</div>
+          <span class="label">Connected with family</span>
+        </div>
+        <div class="check-row ${entry.love.friends?'done':''}" data-toggle="love.friends">
+          <div class="dotbox" style="background:${entry.love.friends?'var(--love-c)':'transparent'}">${checkSvg()}</div>
+          <span class="label">Showed up for a friend</span>
+        </div>
+        <div class="subhead">Notes</div>
+        ${renderNoteSection('love', entry, 'Who, what, how it went...')}
+      </div>
+    </div>
+  `;
+}
+function renderWealthCard(entry){
+  const streak = computeStreak(e=>primaryDone('wealth',e));
+  const profitTotal = totalConfirmedProfit();
+  const todaysCount = (entry.wealth.profitEntries||[]).length;
+  return `
+    <div class="card">
+      <div class="accent" style="background:var(--wealth-c);"></div>
+      <div class="inner">
+        <div class="head">
+          <h2>Wealth</h2>
+          <div class="streak">${streak>0?'🔥 '+streak+'d':'—'}</div>
+        </div>
+        ${renderBars('wealth','#4F8A8B')}
+
+        <div class="subhead">Profit (business) — add each payout as it happens</div>
+        <div class="wealth-row">
+          <input type="number" step="0.01" placeholder="+/- amount" id="wealthProfitInput">
+          <button class="add-btn" id="addProfitBtn">Add</button>
+        </div>
+        ${todaysCount>0 ? '<div class="pending-tag">'+todaysCount+' entr'+(todaysCount===1?'y':'ies')+' logged today — manage them in Pending</div>' : ''}
+        <div class="progress-label" style="margin-bottom:14px;"><span>Confirmed profit total: ${fmtMoney(profitTotal)}</span></div>
+
+        <div class="subhead">Notes</div>
+        ${renderNoteSection('wealth', entry, 'Where it came from...')}
+      </div>
+    </div>
+  `;
+}
+
+function attachHandlers(entry){
+  const tabToday = document.getElementById('tabToday');
+  const tabContent = document.getElementById('tabContent');
+  const tabBread = document.getElementById('tabBread');
+  const tabCut = document.getElementById('tabCut');
+  const tabMacros = document.getElementById('tabMacros');
+  const tabPending = document.getElementById('tabPending');
+  if(tabToday) tabToday.addEventListener('click', ()=>{ currentView='today'; render(); });
+  if(tabContent) tabContent.addEventListener('click', ()=>{ currentView='content'; render(); });
+  if(tabBread) tabBread.addEventListener('click', ()=>{ currentView='bread'; render(); });
+  if(tabCut) tabCut.addEventListener('click', ()=>{ currentView='cut'; render(); });
+  if(tabMacros) tabMacros.addEventListener('click', ()=>{ currentView='macros'; render(); });
+  if(tabPending) tabPending.addEventListener('click', ()=>{ currentView='pending'; render(); });
+
+  const historyToggle = document.getElementById('historyToggle');
+  if(historyToggle) historyToggle.addEventListener('click', ()=>{
+    historyOpen = !historyOpen;
+    if(!historyOpen) historyDate = null;
+    render();
+  });
+  const historyDatePicker = document.getElementById('historyDatePicker');
+  if(historyDatePicker) historyDatePicker.addEventListener('change', ()=>{
+    historyDate = historyDatePicker.value;
+    render();
+  });
+
+  document.querySelectorAll('[data-content-inc]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.getAttribute('data-content-inc');
+      entry.content[key] = (Number(entry.content[key])||0) + 1;
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll('[data-content-dec]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.getAttribute('data-content-dec');
+      entry.content[key] = Math.max(0, (Number(entry.content[key])||0) - 1);
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll('[data-content-target]').forEach(input=>{
+    input.addEventListener('blur', ()=>{
+      const key = input.getAttribute('data-content-target');
+      state.contentTargets[key] = Number(input.value)||0;
+      persist();
+      render();
+    });
+  });
+
+  function addProfitEntry(){
+    const input = document.getElementById('wealthProfitInput');
+    if(!input) return;
+    const val = Number(input.value)||0;
+    if(val !== 0){
+      entry.wealth.profitEntries.push({id:genId(), amount:val, confirmed:false});
+      input.value = '';
+      persist();
+      flashToast('Added to pending');
+      render();
+    }
+  }
+  const addProfitBtn = document.getElementById('addProfitBtn');
+  if(addProfitBtn) addProfitBtn.addEventListener('click', addProfitEntry);
+  const wealthProfitInput = document.getElementById('wealthProfitInput');
+  if(wealthProfitInput){
+    wealthProfitInput.addEventListener('keydown', (ev)=>{
+      if(ev.key === 'Enter'){ ev.preventDefault(); addProfitEntry(); }
+    });
+  }
+
+  document.querySelectorAll('[data-confirm]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const [date, id] = btn.getAttribute('data-confirm').split('|');
+      const e = state.entries[date];
+      if(!e) return;
+      const item = (e.wealth.profitEntries||[]).find(p=>p.id===id);
+      if(item) item.confirmed = true;
+      persist();
+      flashToast('Added to total');
+      render();
+    });
+  });
+  document.querySelectorAll('[data-delete]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const [date, id] = btn.getAttribute('data-delete').split('|');
+      const e = state.entries[date];
+      if(!e) return;
+      e.wealth.profitEntries = (e.wealth.profitEntries||[]).filter(p=>p.id!==id);
+      persist();
+      flashToast('Deleted');
+      render();
+    });
+  });
+  document.querySelectorAll('[data-edit]').forEach(input=>{
+    input.addEventListener('blur', ()=>{
+      const [date, id] = input.getAttribute('data-edit').split('|');
+      const e = state.entries[date];
+      if(!e) return;
+      const item = (e.wealth.profitEntries||[]).find(p=>p.id===id);
+      if(item){
+        item.amount = Number(input.value)||0;
+        persist();
+        flashToast('Updated');
+      }
+    });
+  });
+
+  function addNote(pillarKey){
+    const input = document.querySelector('.note-input[data-note-pillar="'+pillarKey+'"]');
+    if(!input) return;
+    const val = input.value.trim();
+    if(val){
+      if(!Array.isArray(entry[pillarKey].notes)) entry[pillarKey].notes = [];
+      entry[pillarKey].notes.push({id:genId(), text:val});
+      input.value = '';
+      persist();
+      render();
+    }
+  }
+  document.querySelectorAll('[data-note-add]').forEach(btn=>{
+    btn.addEventListener('click', ()=> addNote(btn.getAttribute('data-note-add')));
+  });
+  document.querySelectorAll('.note-input').forEach(inp=>{
+    inp.addEventListener('keydown', (ev)=>{
+      if(ev.key === 'Enter'){ ev.preventDefault(); addNote(inp.getAttribute('data-note-pillar')); }
+    });
+  });
+  document.querySelectorAll('[data-note-edit]').forEach(inp=>{
+    inp.addEventListener('blur', ()=>{
+      const [pillarKey, id] = inp.getAttribute('data-note-edit').split('|');
+      const note = (entry[pillarKey].notes||[]).find(n=>n.id===id);
+      if(note){
+        note.text = inp.value;
+        persist();
+      }
+    });
+  });
+  document.querySelectorAll('[data-note-delete]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const [pillarKey, id] = btn.getAttribute('data-note-delete').split('|');
+      entry[pillarKey].notes = (entry[pillarKey].notes||[]).filter(n=>n.id!==id);
+      persist();
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-toggle]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const path = el.getAttribute('data-toggle').split('.');
+      entry[path[0]][path[1]] = !entry[path[0]][path[1]];
+      persist();
+      render();
+    });
+  });
+  const reflection = document.getElementById('reflection');
+  if(reflection){
+    reflection.addEventListener('blur', ()=>{
+      entry.reflection = reflection.value;
+      persist();
+    });
+  }
+  const balanceInput = document.getElementById('balanceInput');
+  if(balanceInput){
+    balanceInput.addEventListener('blur', ()=>{
+      state.startingBalance = Number(balanceInput.value)||0;
+      persist();
+      render();
+    });
+  }
+  const annualGoalInput = document.getElementById('annualGoalInput');
+  if(annualGoalInput){
+    annualGoalInput.addEventListener('blur', ()=>{
+      state.annualGoal = Number(annualGoalInput.value)||0;
+      persist();
+      render();
+    });
+  }
+
+  document.querySelectorAll('[data-weight-delta]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const delta = parseFloat(btn.getAttribute('data-weight-delta'));
+      const today = todayStr();
+      const base = entry.cut.weight != null ? entry.cut.weight : ((previousCutValue('weight', today)||{}).value ?? 0);
+      entry.cut.weight = Math.round((base + delta) * 10) / 10;
+      persist();
+      render();
+    });
+  });
+  const weightInput = document.getElementById('weightInput');
+  if(weightInput){
+    weightInput.addEventListener('blur', ()=>{
+      const v = weightInput.value.trim();
+      entry.cut.weight = v === '' ? null : Number(v);
+      persist();
+      render();
+    });
+  }
+  const bodyFatInput = document.getElementById('bodyFatInput');
+  if(bodyFatInput){
+    bodyFatInput.addEventListener('blur', ()=>{
+      const v = bodyFatInput.value.trim();
+      entry.cut.bodyFat = v === '' ? null : Number(v);
+      persist();
+      render();
+    });
+  }
+  const cutGoalInput = document.getElementById('cutGoalInput');
+  if(cutGoalInput){
+    cutGoalInput.addEventListener('blur', ()=>{
+      state.cutGoalWeight = Number(cutGoalInput.value)||0;
+      persist();
+      render();
+    });
+  }
+  function addWorkout(){
+    const input = document.getElementById('newWorkoutInput');
+    if(!input) return;
+    const name = input.value.trim();
+    if(name){
+      state.cutWorkouts.push({id:genId(), name});
+      input.value = '';
+      persist();
+      render();
+    }
+  }
+  const addWorkoutBtn = document.getElementById('addWorkoutBtn');
+  if(addWorkoutBtn) addWorkoutBtn.addEventListener('click', addWorkout);
+  const newWorkoutInput = document.getElementById('newWorkoutInput');
+  if(newWorkoutInput){
+    newWorkoutInput.addEventListener('keydown', (ev)=>{
+      if(ev.key === 'Enter'){ ev.preventDefault(); addWorkout(); }
+    });
+  }
+  document.querySelectorAll('[data-workout-delete]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.getAttribute('data-workout-delete');
+      state.cutWorkouts = state.cutWorkouts.filter(w=>w.id!==id);
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll('[data-slider]').forEach(slider=>{
+    slider.addEventListener('input', ()=>{
+      const [wid, field] = slider.getAttribute('data-slider').split('|');
+      if(!entry.cut.workouts[wid]) entry.cut.workouts[wid] = {weight:0, reps:0};
+      entry.cut.workouts[wid][field] = Number(slider.value);
+      const pairedNum = document.querySelector('[data-num="'+wid+'|'+field+'"]');
+      if(pairedNum) pairedNum.value = slider.value;
+      const row = slider.closest('.slider-row');
+      const headVal = row ? row.querySelector('.slider-head span:last-child') : null;
+      if(headVal) headVal.textContent = field==='weight' ? slider.value+' lb' : slider.value;
+    });
+    slider.addEventListener('change', ()=>{ persist(); });
+  });
+  document.querySelectorAll('[data-num]').forEach(numInput=>{
+    numInput.addEventListener('blur', ()=>{
+      const [wid, field] = numInput.getAttribute('data-num').split('|');
+      if(!entry.cut.workouts[wid]) entry.cut.workouts[wid] = {weight:0, reps:0};
+      entry.cut.workouts[wid][field] = Number(numInput.value)||0;
+      persist();
+      render();
+    });
+  });
+
+  function addFood(){
+    const nameInput = document.getElementById('foodNameInput');
+    const calInput = document.getElementById('foodCalInput');
+    const proteinInput = document.getElementById('foodProteinInput');
+    if(!calInput || !proteinInput) return;
+    const cal = Number(calInput.value)||0;
+    const protein = Number(proteinInput.value)||0;
+    if(cal===0 && protein===0) return;
+    entry.macros.foods.push({id:genId(), name: nameInput?nameInput.value.trim():'', calories:cal, protein:protein});
+    if(nameInput) nameInput.value='';
+    calInput.value='';
+    proteinInput.value='';
+    persist();
+    render();
+  }
+  const addFoodBtn = document.getElementById('addFoodBtn');
+  if(addFoodBtn) addFoodBtn.addEventListener('click', addFood);
+  ['foodNameInput','foodCalInput','foodProteinInput'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter'){ ev.preventDefault(); addFood(); } });
+  });
+  document.querySelectorAll('[data-food-delete]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.getAttribute('data-food-delete');
+      entry.macros.foods = (entry.macros.foods||[]).filter(f=>f.id!==id);
+      persist();
+      render();
+    });
+  });
+  const calorieGoalInput = document.getElementById('calorieGoalInput');
+  if(calorieGoalInput){
+    calorieGoalInput.addEventListener('blur', ()=>{
+      state.calorieGoal = Number(calorieGoalInput.value)||0;
+      persist();
+      render();
+    });
+  }
+  const proteinGoalInput = document.getElementById('proteinGoalInput');
+  if(proteinGoalInput){
+    proteinGoalInput.addEventListener('blur', ()=>{
+      state.proteinGoal = Number(proteinGoalInput.value)||0;
+      persist();
+      render();
+    });
+  }
+
+  const resetBtn = document.getElementById('resetBtn');
+  if(resetBtn){
+    resetBtn.addEventListener('click', ()=>{
+      resetConfirmOpen = true;
+      render();
+    });
+  }
+  const resetConfirmYes = document.getElementById('resetConfirmYes');
+  if(resetConfirmYes){
+    resetConfirmYes.addEventListener('click', async ()=>{
+      state = defaultState();
+      resetConfirmOpen = false;
+      await persist(false, true);
+      render();
+      flashToast('Reset complete');
+    });
+  }
+  const resetConfirmNo = document.getElementById('resetConfirmNo');
+  if(resetConfirmNo){
+    resetConfirmNo.addEventListener('click', ()=>{
+      resetConfirmOpen = false;
+      render();
+    });
+  }
+}
+
+const manualSaveBtn = document.getElementById('manualSaveBtn');
+if(manualSaveBtn){
+  manualSaveBtn.addEventListener('click', async ()=>{
+    manualSaveBtn.classList.add('pulsing');
+    await persist(true, true);
+    setTimeout(()=>manualSaveBtn.classList.remove('pulsing'), 200);
+  });
+}
+
+const backupFab = document.getElementById('backupFab');
+const backupOverlay = document.getElementById('backupOverlay');
+const backupOutput = document.getElementById('backupOutput');
+const backupInput = document.getElementById('backupInput');
+if(backupFab){
+  backupFab.addEventListener('click', ()=>{
+    backupOutput.value = JSON.stringify(state, null, 2);
+    backupOverlay.style.display = 'flex';
+  });
+}
+const closeBackupBtn = document.getElementById('closeBackupBtn');
+if(closeBackupBtn) closeBackupBtn.addEventListener('click', ()=>{
+  backupOverlay.style.display = 'none';
+  const confirmBox = document.getElementById('restoreConfirmBox');
+  if(confirmBox) confirmBox.style.display = 'none';
+});
+const copyBackupBtn = document.getElementById('copyBackupBtn');
+if(copyBackupBtn){
+  copyBackupBtn.addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(backupOutput.value);
+      flashToast('Copied');
+    }catch(e){
+      backupOutput.focus();
+      backupOutput.select();
+      try{ document.execCommand('copy'); flashToast('Copied'); }
+      catch(e2){ flashToast('Select the text and copy manually'); }
+    }
+  });
+}
+const restoreBackupBtn = document.getElementById('restoreBackupBtn');
+const restoreConfirmBox = document.getElementById('restoreConfirmBox');
+if(restoreBackupBtn){
+  restoreBackupBtn.addEventListener('click', ()=>{
+    const text = backupInput.value.trim();
+    if(!text){ flashToast('Paste your backup text first'); return; }
+    restoreConfirmBox.style.display = 'block';
+  });
+}
+const restoreConfirmYes = document.getElementById('restoreConfirmYes');
+if(restoreConfirmYes){
+  restoreConfirmYes.addEventListener('click', async ()=>{
+    const text = backupInput.value.trim();
+    try{
+      const parsed = JSON.parse(text);
+      state = migrateState(parsed);
+      await persist(true, true);
+      backupOverlay.style.display = 'none';
+      restoreConfirmBox.style.display = 'none';
+      backupInput.value = '';
+      render();
+      flashToast('Restored');
+    }catch(e){
+      flashToast('That text is not a valid backup');
+      restoreConfirmBox.style.display = 'none';
+    }
+  });
+}
+const restoreConfirmNo = document.getElementById('restoreConfirmNo');
+if(restoreConfirmNo){
+  restoreConfirmNo.addEventListener('click', ()=>{ restoreConfirmBox.style.display = 'none'; });
+}
+
+loadData();
+</script>
+</body>
+</html>
