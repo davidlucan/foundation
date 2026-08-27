@@ -99,6 +99,15 @@
   .confirmed-item .info{display:flex;flex-direction:column;gap:2px;flex:1;}
   .confirmed-item .amt{font-family:'IBM Plex Mono',monospace;font-size:0.95rem;font-weight:600;}
   .confirmed-item .meta{font-size:0.72rem;color:var(--muted);}
+
+  .journal-wrap{max-width:600px;margin:0 auto;}
+  .journal-day{margin-bottom:20px;}
+  .journal-day-head{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--accent);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--ink-line);}
+  .journal-entry{background:linear-gradient(180deg, rgba(23,50,74,0.18), rgba(10,20,32,0.4));border:1px solid var(--ink-line);border-radius:10px;padding:10px 12px;margin-bottom:10px;}
+  .journal-entry-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .journal-time{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--muted);}
+  .journal-text{width:100%;background:rgba(255,255,255,0.03);border:1px solid transparent;border-radius:8px;padding:8px 10px;color:var(--parchment);font-family:'Inter',sans-serif;font-size:0.9rem;line-height:1.5;resize:vertical;}
+  .journal-text:focus{outline:none;border-color:var(--ink-line);background:rgba(255,255,255,0.05);}
   .history-row{display:flex;justify-content:space-between;gap:14px;padding:5px 0;font-size:0.85rem;border-bottom:1px solid rgba(255,255,255,0.04);}
   .history-row .v{color:var(--muted);text-align:right;}
 
@@ -469,7 +478,7 @@ function defaultEntry(){
     content:{bb_ig:0, bb_fb:0, of_ig:0, of_fb:0},
     cut:{weight:null, bodyFat:null, workouts:{}},
     macros:{foods:[]},
-    reflection:''
+    journal:[]
   };
 }
 function defaultState(){
@@ -520,7 +529,13 @@ function migrateEntry(e){
   if(!e.macros) e.macros = {};
   if(!Array.isArray(e.macros.foods)) e.macros.foods = [];
 
-  if(typeof e.reflection !== 'string') e.reflection = '';
+  if(!Array.isArray(e.journal)){
+    e.journal = [];
+    if(typeof e.reflection === 'string' && e.reflection.trim()){
+      e.journal.push({id:genId(), text:e.reflection.trim(), time:null});
+    }
+  }
+  delete e.reflection;
   return e;
 }
 function migrateState(s){
@@ -876,6 +891,7 @@ function render(){
         <button class="tab-btn ${currentView==='bread'?'active':''}" id="tabBread">Daily Bread</button>
         <button class="tab-btn ${currentView==='cut'?'active':''}" id="tabCut">Cut Process</button>
         <button class="tab-btn ${currentView==='macros'?'active':''}" id="tabMacros">Macros</button>
+        <button class="tab-btn ${currentView==='journal'?'active':''}" id="tabJournal">Journal Logs</button>
         <button class="tab-btn ${currentView==='pending'?'active':''}" id="tabPending">Pending ${pending.length>0 ? '<span class="tab-badge">'+pending.length+'</span>' : ''}</button>
       </div>
 
@@ -899,7 +915,7 @@ function render(){
       <div class="balance-edit">Starting balance: $<input type="number" step="0.01" id="balanceInput" value="${state.startingBalance}"></div>
       ` : ''}
 
-      ${currentView === 'today' ? renderTodayView(entry) : currentView === 'content' ? renderContentView(entry) : currentView === 'bread' ? renderBreadView() : currentView === 'cut' ? renderCutView(entry) : currentView === 'macros' ? renderMacrosView(entry) : renderPendingView(pending)}
+      ${currentView === 'today' ? renderTodayView(entry) : currentView === 'content' ? renderContentView(entry) : currentView === 'bread' ? renderBreadView() : currentView === 'cut' ? renderCutView(entry) : currentView === 'macros' ? renderMacrosView(entry) : currentView === 'journal' ? renderJournalView(entry) : renderPendingView(pending)}
     </div>
   `;
 
@@ -980,14 +996,6 @@ function renderTodayView(entry){
         ${renderFaithCard(entry)}
         ${renderLoveCard(entry)}
         ${renderWealthCard(entry)}
-      </div>
-
-      <div class="card reflect" style="margin-top:16px;">
-        <div class="accent" style="background:linear-gradient(90deg, var(--body-c), var(--faith-c), var(--love-c), var(--wealth-c));"></div>
-        <div class="inner">
-          <h3>Reflection</h3>
-          <textarea class="note" id="reflection" placeholder="One sentence on how the day went...">${entry.reflection||''}</textarea>
-        </div>
       </div>
 
       <div class="footer-row">
@@ -1239,6 +1247,52 @@ function renderMacrosView(entry){
     </div>
   `;
 }
+function renderJournalView(entry){
+  const today = todayStr();
+  const activeLabel = activeDate === today ? 'today' : new Date(activeDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  const datesWithEntries = Object.keys(state.entries)
+    .filter(d => (state.entries[d].journal||[]).length > 0)
+    .sort().reverse();
+
+  const history = datesWithEntries.map(d=>{
+    const e = state.entries[d];
+    const dLabel = new Date(d+'T00:00:00').toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+    const isToday = d === today;
+    const items = (e.journal||[]).slice().reverse();
+    return `
+      <div class="journal-day">
+        <div class="journal-day-head">${isToday ? 'Today · ' : ''}${dLabel}</div>
+        ${items.map(j=>`
+          <div class="journal-entry">
+            <div class="journal-entry-top">
+              <span class="journal-time">${j.time ? escapeHtml(j.time) : ''}</span>
+              <button class="note-delete" data-journal-delete="${d}|${j.id}" title="Delete">✕</button>
+            </div>
+            <textarea class="journal-text" data-journal-edit="${d}|${j.id}" rows="2">${escapeHtml(j.text)}</textarea>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }).join('');
+
+  return `
+    ${renderDateNav()}
+    <div class="journal-wrap">
+      <div class="card">
+        <div class="accent" style="background:var(--accent);"></div>
+        <div class="inner">
+          <div class="subhead" style="margin-top:0;">New entry for ${activeLabel}</div>
+          <textarea class="note" id="journalInput" placeholder="What's on your mind? (Enter to save, Shift+Enter for a new line)"></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+            <button class="add-btn" id="journalAddBtn">Add entry</button>
+          </div>
+        </div>
+      </div>
+
+      ${datesWithEntries.length ? `<div class="subhead" style="text-align:center;margin:26px 0 4px;">Your journal</div>${history}` : '<p style="text-align:center;color:var(--muted);font-size:0.88rem;margin-top:30px;">No entries yet. Your reflections will collect here, newest first.</p>'}
+    </div>
+  `;
+}
 function renderPendingView(pending){
   const {gains, losses} = pendingProfitBreakdown();
   const projected = totalMoney() + gains + losses;
@@ -1426,6 +1480,8 @@ function attachHandlers(entry){
   if(tabBread) tabBread.addEventListener('click', ()=>{ currentView='bread'; render(); });
   if(tabCut) tabCut.addEventListener('click', ()=>{ currentView='cut'; render(); });
   if(tabMacros) tabMacros.addEventListener('click', ()=>{ currentView='macros'; render(); });
+  const tabJournal = document.getElementById('tabJournal');
+  if(tabJournal) tabJournal.addEventListener('click', ()=>{ currentView='journal'; render(); });
   if(tabPending) tabPending.addEventListener('click', ()=>{ currentView='pending'; render(); });
 
   const datePrev = document.getElementById('datePrev');
@@ -1605,13 +1661,47 @@ function attachHandlers(entry){
       render();
     });
   });
-  const reflection = document.getElementById('reflection');
-  if(reflection){
-    reflection.addEventListener('blur', ()=>{
-      entry.reflection = reflection.value;
+  function addJournal(){
+    const input = document.getElementById('journalInput');
+    if(!input) return;
+    const val = input.value.trim();
+    if(val){
+      if(!Array.isArray(entry.journal)) entry.journal = [];
+      const now = new Date();
+      const time = now.toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'});
+      entry.journal.push({id:genId(), text:val, time:time});
+      input.value = '';
       persist();
+      render();
+    }
+  }
+  const journalAddBtn = document.getElementById('journalAddBtn');
+  if(journalAddBtn) journalAddBtn.addEventListener('click', addJournal);
+  const journalInput = document.getElementById('journalInput');
+  if(journalInput){
+    journalInput.addEventListener('keydown', (ev)=>{
+      if(ev.key === 'Enter' && !ev.shiftKey){ ev.preventDefault(); addJournal(); }
     });
   }
+  document.querySelectorAll('[data-journal-edit]').forEach(el=>{
+    el.addEventListener('blur', ()=>{
+      const [date, id] = el.getAttribute('data-journal-edit').split('|');
+      const en = state.entries[date];
+      if(!en) return;
+      const item = (en.journal||[]).find(j=>j.id===id);
+      if(item){ item.text = el.value.trim(); persist(); }
+    });
+  });
+  document.querySelectorAll('[data-journal-delete]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const [date, id] = btn.getAttribute('data-journal-delete').split('|');
+      const en = state.entries[date];
+      if(!en) return;
+      en.journal = (en.journal||[]).filter(j=>j.id!==id);
+      persist();
+      render();
+    });
+  });
   const balanceInput = document.getElementById('balanceInput');
   if(balanceInput){
     balanceInput.addEventListener('blur', ()=>{
