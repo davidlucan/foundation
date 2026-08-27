@@ -215,6 +215,18 @@
   .target-edit input{width:40px;background:transparent;border:none;border-bottom:1px dashed var(--ink-line);color:var(--parchment);font-family:'IBM Plex Mono',monospace;font-size:0.78rem;padding:1px 0;text-align:center;}
   .platform-label{font-size:0.78rem;color:var(--muted);margin-bottom:10px;}
 
+  .product-name{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);border-radius:8px;color:var(--parchment);font-family:'IBM Plex Mono',monospace;font-size:0.95rem;font-weight:600;padding:7px 10px;letter-spacing:0.04em;}
+  .product-name:focus{outline:none;border-color:var(--accent);}
+  .product-total{font-family:'IBM Plex Mono',monospace;font-size:0.76rem;color:var(--muted);margin-bottom:14px;}
+  .platform-block{border-top:1px solid var(--ink-line);padding-top:14px;margin-top:14px;}
+  .platform-block:first-of-type{border-top:none;padding-top:0;margin-top:0;}
+  .platform-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .platform-name{font-family:'IBM Plex Mono',monospace;font-size:0.85rem;font-weight:600;letter-spacing:0.04em;}
+  .platform-toggles{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px;border-top:1px solid var(--ink-line);padding-top:14px;}
+  .plat-chip{background:rgba(255,255,255,0.03);border:1px solid var(--ink-line);color:var(--muted);padding:5px 11px;border-radius:999px;font-size:0.72rem;cursor:pointer;font-family:'IBM Plex Mono',monospace;opacity:0.55;transition:all .15s ease;}
+  .plat-chip.on{opacity:1;background:rgba(56,189,248,0.06);}
+  .plat-chip:hover{opacity:1;}
+
   .reading-item{border:1px solid var(--ink-line);border-radius:10px;padding:10px 14px;margin-bottom:10px;background:rgba(255,255,255,0.02);}
   .reading-item summary{cursor:pointer;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:0.9rem;list-style:none;letter-spacing:0.04em;}
   .reading-item summary::-webkit-details-marker{display:none;}
@@ -471,13 +483,27 @@ const PILLARS = [
   {key:'love', name:'Love', colorHex:'#C97B84'},
   {key:'wealth', name:'Wealth', colorHex:'#4F8A8B'},
 ];
-const CONTENT_COMBOS = [
-  {key:'bb_ig', brand:'Ballistic Brew', platform:'Instagram', colorHex:'#3C5A99'},
-  {key:'bb_fb', brand:'Ballistic Brew', platform:'Facebook', colorHex:'#2F4373'},
-  {key:'of_ig', brand:'Onesie Fun', platform:'Instagram', colorHex:'#5B8C5A'},
-  {key:'of_fb', brand:'Onesie Fun', platform:'Facebook', colorHex:'#3F6B3E'},
+const PLATFORMS = [
+  {key:'ig', label:'Instagram', colorHex:'#38bdf8'},
+  {key:'fb', label:'Facebook', colorHex:'#5b8cff'},
+  {key:'yt', label:'YouTube Shorts', colorHex:'#ff6b6b'},
 ];
-const DEFAULT_CONTENT_TARGETS = {bb_ig:2, bb_fb:5, of_ig:2, of_fb:5};
+const DEFAULT_PLATFORM_TARGETS = {ig:2, fb:5, yt:4};
+function newProduct(name){
+  return {
+    id: genId(),
+    name: name || 'New product',
+    platforms: {
+      ig:{on:true, target:2},
+      fb:{on:true, target:5},
+      yt:{on:true, target:4},
+    }
+  };
+}
+function defaultProducts(){
+  const p = newProduct('JingleTails');
+  return [p];
+}
 const DEFAULT_ANNUAL_GOAL = 200000;
 const DEFAULT_CUT_GOAL_WEIGHT = 185;
 const DEFAULT_CALORIE_GOAL = 1800;
@@ -571,14 +597,14 @@ function defaultEntry(){
     faith:{bible:false, prayer:false, notes:[]},
     love:{gf:false, family:false, friends:false, notes:[]},
     wealth:{profitEntries:[], notes:[]},
-    content:{bb_ig:0, bb_fb:0, of_ig:0, of_fb:0},
+    content:{},
     cut:{weight:null, bodyFat:null, workouts:{}},
     macros:{foods:[]},
     journal:[]
   };
 }
 function defaultState(){
-  return { entries:{}, annualGoal: DEFAULT_ANNUAL_GOAL, startingBalance: DEFAULT_STARTING_BALANCE, contentTargets: Object.assign({}, DEFAULT_CONTENT_TARGETS), cutWorkouts: [], cutGoalWeight: DEFAULT_CUT_GOAL_WEIGHT, calorieGoal: DEFAULT_CALORIE_GOAL, proteinGoal: DEFAULT_PROTEIN_GOAL };
+  return { entries:{}, annualGoal: DEFAULT_ANNUAL_GOAL, startingBalance: DEFAULT_STARTING_BALANCE, products: defaultProducts(), cutWorkouts: [], cutGoalWeight: DEFAULT_CUT_GOAL_WEIGHT, calorieGoal: DEFAULT_CALORIE_GOAL, proteinGoal: DEFAULT_PROTEIN_GOAL };
 }
 function migrateEntry(e){
   if(!e.wealth) e.wealth = {};
@@ -614,8 +640,9 @@ function migrateEntry(e){
     delete e[k].note;
   });
 
-  if(!e.content) e.content = {};
-  CONTENT_COMBOS.forEach(c=>{ if(typeof e.content[c.key] !== 'number') e.content[c.key] = 0; });
+  if(!e.content || typeof e.content !== 'object' || Array.isArray(e.content)) e.content = {};
+  // Drop legacy per-combo numeric counts (bb_ig, of_fb, etc.); new model is product-keyed objects
+  Object.keys(e.content).forEach(k=>{ if(typeof e.content[k] === 'number') delete e.content[k]; });
 
   if(!e.cut) e.cut = {};
   if(typeof e.cut.weight !== 'number') e.cut.weight = null;
@@ -639,8 +666,18 @@ function migrateState(s){
   if(typeof s.annualGoal !== 'number') s.annualGoal = DEFAULT_ANNUAL_GOAL;
   delete s.savingsGoal;
   if(typeof s.startingBalance !== 'number') s.startingBalance = DEFAULT_STARTING_BALANCE;
-  if(!s.contentTargets) s.contentTargets = {};
-  CONTENT_COMBOS.forEach(c=>{ if(typeof s.contentTargets[c.key] !== 'number') s.contentTargets[c.key] = DEFAULT_CONTENT_TARGETS[c.key]; });
+  if(!Array.isArray(s.products)) s.products = defaultProducts();
+  s.products.forEach(p=>{
+    if(!p.id) p.id = genId();
+    if(typeof p.name !== 'string') p.name = 'Product';
+    if(!p.platforms || typeof p.platforms !== 'object') p.platforms = {};
+    PLATFORMS.forEach(pl=>{
+      if(!p.platforms[pl.key]) p.platforms[pl.key] = {on:false, target:DEFAULT_PLATFORM_TARGETS[pl.key]||0};
+      if(typeof p.platforms[pl.key].on !== 'boolean') p.platforms[pl.key].on = true;
+      if(typeof p.platforms[pl.key].target !== 'number') p.platforms[pl.key].target = DEFAULT_PLATFORM_TARGETS[pl.key]||0;
+    });
+  });
+  delete s.contentTargets;
   if(!Array.isArray(s.cutWorkouts)) s.cutWorkouts = [];
   if(typeof s.cutGoalWeight !== 'number') s.cutGoalWeight = DEFAULT_CUT_GOAL_WEIGHT;
   if(typeof s.calorieGoal !== 'number') s.calorieGoal = DEFAULT_CALORIE_GOAL;
@@ -936,14 +973,20 @@ function renderBars(pillarKey, colorHex){
     return '<div class="bar" style="background:'+(filled?colorHex:'rgba(255,255,255,0.06)')+'"></div>';
   }).join('') + '</div>';
 }
-function renderContentBars(key, colorHex, target){
+function contentCount(e, pid, plat){
+  if(!e || !e.content || !e.content[pid]) return 0;
+  return Number(e.content[pid][plat]) || 0;
+}
+function renderPlatformBars(pid, plat, colorHex, target){
   const days = last7();
   return '<div class="bars">' + days.map(d=>{
-    const e = state.entries[d];
-    const count = e && e.content ? (Number(e.content[key])||0) : 0;
+    const count = contentCount(state.entries[d], pid, plat);
     const filled = target>0 && count>=target;
     return '<div class="bar" style="background:'+(filled?colorHex:'rgba(255,255,255,0.06)')+'"></div>';
   }).join('') + '</div>';
+}
+function contentStreak(pid, plat, target){
+  return computeStreak(e=> target>0 && contentCount(e, pid, plat) >= target);
 }
 function renderNoteSection(pillarKey, entry, placeholder){
   const notes = entry[pillarKey].notes || [];
@@ -1112,41 +1155,76 @@ function renderTodayView(entry){
 }
 
 function renderContentView(entry){
-  const totalToday = CONTENT_COMBOS.reduce((s,c)=> s + (Number(entry.content[c.key])||0), 0);
-  const totalTarget = CONTENT_COMBOS.reduce((s,c)=> s + (Number(state.contentTargets[c.key])||0), 0);
-  return `
-    ${renderDateNav()}
-    <p class="pending-tag" style="text-align:center;margin-bottom:18px;">Posted ${totalToday} of ${totalTarget} videos across both pages.</p>
-    <div class="pillars">
-      ${CONTENT_COMBOS.map(c=>renderContentCard(c, entry)).join('')}
-    </div>
-  `;
-}
-function renderContentCard(combo, entry){
-  const count = Number(entry.content[combo.key])||0;
-  const target = Number(state.contentTargets[combo.key])||0;
-  const pct = target>0 ? Math.min(100, Math.round((count/target)*100)) : 0;
-  const streak = computeStreak(e=>{
-    if(!e || !e.content) return false;
-    return target>0 && (Number(e.content[combo.key])||0) >= target;
+  let totalToday = 0, totalTarget = 0;
+  state.products.forEach(p=>{
+    PLATFORMS.forEach(pl=>{
+      const cfg = p.platforms[pl.key];
+      if(cfg && cfg.on){
+        totalToday += contentCount(entry, p.id, pl.key);
+        totalTarget += Number(cfg.target)||0;
+      }
+    });
   });
   return `
-    <div class="card">
-      <div class="accent" style="background:${combo.colorHex};"></div>
+    ${renderDateNav()}
+    <p class="pending-tag" style="text-align:center;margin-bottom:16px;">Posted ${totalToday} of ${totalTarget} across all products.</p>
+    <div class="workout-add-row">
+      <input type="text" id="newProductInput" placeholder="Add a product to track">
+      <button class="add-btn" id="addProductBtn">Add</button>
+    </div>
+    <div class="pillars">
+      ${state.products.map(p=>renderProductCard(p, entry)).join('')}
+    </div>
+    ${state.products.length===0 ? '<p style="text-align:center;color:var(--muted);font-size:0.85rem;margin-top:20px;">No products yet — add one above.</p>' : ''}
+  `;
+}
+function renderProductCard(product, entry){
+  const activePlatforms = PLATFORMS.filter(pl=> product.platforms[pl.key] && product.platforms[pl.key].on);
+  let prodToday = 0, prodTarget = 0;
+  activePlatforms.forEach(pl=>{
+    prodToday += contentCount(entry, product.id, pl.key);
+    prodTarget += Number(product.platforms[pl.key].target)||0;
+  });
+  return `
+    <div class="card product-card">
+      <div class="accent" style="background:var(--accent);"></div>
       <div class="inner">
-        <div class="head">
-          <h2>${combo.brand}</h2>
-          <div class="streak">${streak>0?'🔥 '+streak+'d':'—'}</div>
+        <div class="head" style="align-items:center;">
+          <input type="text" class="product-name" data-product-name="${product.id}" value="${escapeHtml(product.name)}">
+          <button class="note-delete" data-product-delete="${product.id}" title="Remove product">✕</button>
         </div>
-        <div class="platform-label">${combo.platform}</div>
-        ${renderContentBars(combo.key, combo.colorHex, target)}
-        <div class="count-row">
-          <button class="count-btn" data-content-dec="${combo.key}">−</button>
-          <div class="count-display">${count}</div>
-          <button class="count-btn" data-content-inc="${combo.key}">+</button>
+        <div class="product-total">${prodToday} / ${prodTarget} today</div>
+
+        ${activePlatforms.map(pl=>{
+          const cfg = product.platforms[pl.key];
+          const target = Number(cfg.target)||0;
+          const count = contentCount(entry, product.id, pl.key);
+          const pct = target>0 ? Math.min(100, Math.round((count/target)*100)) : 0;
+          const streak = contentStreak(product.id, pl.key, target);
+          return `
+            <div class="platform-block">
+              <div class="platform-head">
+                <span class="platform-name" style="color:${pl.colorHex}">${pl.label}</span>
+                <span class="streak">${streak>0?'🔥 '+streak+'d':'—'}</span>
+              </div>
+              ${renderPlatformBars(product.id, pl.key, pl.colorHex, target)}
+              <div class="count-row">
+                <button class="count-btn" data-cc-dec="${product.id}|${pl.key}">−</button>
+                <div class="count-display">${count}</div>
+                <button class="count-btn" data-cc-inc="${product.id}|${pl.key}">+</button>
+              </div>
+              <div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${pl.colorHex};box-shadow:0 0 10px ${pl.colorHex}66;"></div></div>
+              <div class="target-edit">Target: <input type="number" min="0" data-cc-target="${product.id}|${pl.key}" value="${target}"> /day</div>
+            </div>
+          `;
+        }).join('')}
+
+        <div class="platform-toggles">
+          ${PLATFORMS.map(pl=>{
+            const on = product.platforms[pl.key] && product.platforms[pl.key].on;
+            return `<button class="plat-chip ${on?'on':''}" data-plat-toggle="${product.id}|${pl.key}" style="${on?'border-color:'+pl.colorHex+';color:'+pl.colorHex:''}">${pl.label}</button>`;
+          }).join('')}
         </div>
-        <div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${combo.colorHex};"></div></div>
-        <div class="target-edit">Target: <input type="number" min="0" data-content-target="${combo.key}" value="${target}"> /day</div>
       </div>
     </div>
   `;
@@ -1653,30 +1731,73 @@ function attachHandlers(entry){
     if(dateJump.value && dateJump.value <= todayStr()){ activeDate = dateJump.value; journalSpecificDate = null; render(); }
   });
 
-  document.querySelectorAll('[data-content-inc]').forEach(btn=>{
+  function ccSet(pid, plat, delta, absolute){
+    if(!entry.content[pid]) entry.content[pid] = {};
+    const cur = Number(entry.content[pid][plat])||0;
+    entry.content[pid][plat] = absolute!=null ? Math.max(0,absolute) : Math.max(0, cur+delta);
+  }
+  document.querySelectorAll('[data-cc-inc]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      const key = btn.getAttribute('data-content-inc');
-      entry.content[key] = (Number(entry.content[key])||0) + 1;
+      const [pid, plat] = btn.getAttribute('data-cc-inc').split('|');
+      ccSet(pid, plat, 1);
       persist();
       render();
     });
   });
-  document.querySelectorAll('[data-content-dec]').forEach(btn=>{
+  document.querySelectorAll('[data-cc-dec]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      const key = btn.getAttribute('data-content-dec');
-      entry.content[key] = Math.max(0, (Number(entry.content[key])||0) - 1);
+      const [pid, plat] = btn.getAttribute('data-cc-dec').split('|');
+      ccSet(pid, plat, -1);
       persist();
       render();
     });
   });
-  document.querySelectorAll('[data-content-target]').forEach(input=>{
+  document.querySelectorAll('[data-cc-target]').forEach(input=>{
     input.addEventListener('blur', ()=>{
-      const key = input.getAttribute('data-content-target');
-      state.contentTargets[key] = Number(input.value)||0;
+      const [pid, plat] = input.getAttribute('data-cc-target').split('|');
+      const prod = state.products.find(p=>p.id===pid);
+      if(prod && prod.platforms[plat]){ prod.platforms[plat].target = Number(input.value)||0; persist(); render(); }
+    });
+  });
+  document.querySelectorAll('[data-product-name]').forEach(input=>{
+    input.addEventListener('blur', ()=>{
+      const pid = input.getAttribute('data-product-name');
+      const prod = state.products.find(p=>p.id===pid);
+      if(prod){ prod.name = input.value.trim() || 'Product'; persist(); }
+    });
+  });
+  document.querySelectorAll('[data-product-delete]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const pid = btn.getAttribute('data-product-delete');
+      state.products = state.products.filter(p=>p.id!==pid);
       persist();
       render();
     });
   });
+  document.querySelectorAll('[data-plat-toggle]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const [pid, plat] = btn.getAttribute('data-plat-toggle').split('|');
+      const prod = state.products.find(p=>p.id===pid);
+      if(prod && prod.platforms[plat]){ prod.platforms[plat].on = !prod.platforms[plat].on; persist(); render(); }
+    });
+  });
+  function addProduct(){
+    const input = document.getElementById('newProductInput');
+    if(!input) return;
+    const name = input.value.trim();
+    if(name){
+      state.products.push(newProduct(name));
+      input.value='';
+      persist();
+      render();
+    }
+  }
+  const addProductBtn = document.getElementById('addProductBtn');
+  if(addProductBtn) addProductBtn.addEventListener('click', addProduct);
+  const newProductInput = document.getElementById('newProductInput');
+  if(newProductInput){
+    newProductInput.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter'){ ev.preventDefault(); addProduct(); } });
+  }
 
   function addProfitEntry(){
     const input = document.getElementById('wealthProfitInput');
