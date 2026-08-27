@@ -59,7 +59,8 @@
   .tabs{display:flex;justify-content:center;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
   .tab-btn{background:rgba(10,20,32,0.6);border:1px solid var(--ink-line);color:var(--muted);padding:8px 18px;border-radius:999px;font-size:0.78rem;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:0.03em;display:flex;align-items:center;gap:6px;transition:all .15s ease;}
   .tab-btn:hover{color:var(--parchment);border-color:var(--accent);}
-  .tab-btn.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);box-shadow:0 0 14px rgba(56,189,248,0.25);}
+  @keyframes tabpulse{0%,100%{box-shadow:0 0 14px rgba(56,189,248,0.25);}50%{box-shadow:0 0 20px rgba(56,189,248,0.45);}}
+  .tab-btn.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);animation:tabpulse 2.6s ease-in-out infinite;}
   .tab-badge{background:var(--accent);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:0.68rem;font-weight:600;border-radius:999px;padding:1px 6px;}
 
   .keystone{
@@ -278,6 +279,22 @@
   .save-fab svg{width:20px;height:20px;}
   .save-fab.pulsing{transform:scale(1.12);}
   #backupFab{top:68px;}
+  #muteFab{top:120px;}
+
+  @keyframes viewfade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .view-anim{animation:viewfade .22s ease;}
+  @keyframes headersheen{0%{background-position:-120% 0;}60%,100%{background-position:220% 0;}}
+  .hero h1{
+    background:linear-gradient(100deg, #eaf7ff 20%, var(--accent) 50%, #eaf7ff 80%);
+    background-size:220% auto;
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;
+    animation:headersheen 6s ease-in-out infinite;
+  }
+  @media (hover:hover){
+    .card{transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;}
+    .card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,0.4), 0 0 18px rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.4);}
+  }
 
   .backup-overlay{
     position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(2,6,12,0.75);
@@ -349,6 +366,18 @@
     <line x1="12" y1="15" x2="12" y2="3"></line>
   </svg>
 </button>
+<button class="save-fab" id="muteFab" title="Sound on/off" style="display:none;">
+  <svg id="muteIconOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+  </svg>
+  <svg id="muteIconOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+    <line x1="23" y1="9" x2="17" y2="15"></line>
+    <line x1="17" y1="9" x2="23" y2="15"></line>
+  </svg>
+</button>
 
 <div id="backupOverlay" class="backup-overlay" style="display:none;">
   <div class="backup-card">
@@ -383,6 +412,59 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 let sb = null;
 let currentUser = null;
 const STORAGE_KEY = 'foundation-data';
+
+// ---- Sound engine (sci-fi whoosh, generated in-code) ----
+let soundMuted = false;
+try{ soundMuted = localStorage.getItem('foundation-muted') === '1'; }catch(e){}
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
+  }
+  if(audioCtx && audioCtx.state === 'suspended'){ audioCtx.resume(); }
+  return audioCtx;
+}
+function playWhoosh(){
+  if(soundMuted) return;
+  const ctx = ensureAudio();
+  if(!ctx) return;
+  const now = ctx.currentTime;
+  // filtered noise sweep = "whoosh"
+  const dur = 0.18;
+  const bufferSize = Math.floor(ctx.sampleRate * dur);
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<bufferSize;i++){ data[i] = (Math.random()*2-1) * (1 - i/bufferSize); }
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  const bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.setValueAtTime(700, now);
+  bp.frequency.exponentialRampToValueAtTime(2600, now + dur);
+  bp.Q.value = 1.2;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.14, now + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+  noise.connect(bp); bp.connect(gain); gain.connect(ctx.destination);
+  noise.start(now); noise.stop(now + dur);
+}
+function playTick(){
+  if(soundMuted) return;
+  const ctx = ensureAudio();
+  if(!ctx) return;
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(1400, now);
+  osc.frequency.exponentialRampToValueAtTime(2200, now + 0.05);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(now); osc.stop(now + 0.1);
+}
 const PILLARS = [
   {key:'body', name:'Body', colorHex:'#C1623D'},
   {key:'faith', name:'Faith', colorHex:'#C9A24B'},
@@ -458,6 +540,7 @@ const DEFAULT_STARTING_BALANCE = 9606.98;
 
 let state = null;
 let currentView = 'today';
+let prevRenderedView = null;
 let journalScope = 'day';
 let journalSpecificDate = null;
 let activeDate = null;
@@ -928,9 +1011,12 @@ function render(){
       <div class="balance-edit">Starting balance: $<input type="number" step="0.01" id="balanceInput" value="${state.startingBalance}"></div>
       ` : ''}
 
+      <div class="${prevRenderedView !== currentView ? 'view-anim' : ''}">
       ${currentView === 'today' ? renderTodayView(entry) : currentView === 'content' ? renderContentView(entry) : currentView === 'bread' ? renderBreadView() : currentView === 'cut' ? renderCutView(entry) : currentView === 'macros' ? renderMacrosView(entry) : currentView === 'journal' ? renderJournalView(entry) : renderPendingView(pending)}
+      </div>
     </div>
   `;
+  prevRenderedView = currentView;
 
   attachHandlers(entry);
 }
@@ -1528,6 +1614,16 @@ function renderWealthCard(entry){
 }
 
 function attachHandlers(entry){
+  // Hover sounds (desktop pointers only)
+  if(window.matchMedia && window.matchMedia('(hover:hover)').matches){
+    document.querySelectorAll('.tab-btn').forEach(el=>{
+      el.addEventListener('mouseenter', playWhoosh);
+    });
+    document.querySelectorAll('.add-btn, .confirm-btn, .scope-btn, .count-btn, .quick-btn, .date-arrow').forEach(el=>{
+      el.addEventListener('mouseenter', playTick);
+    });
+  }
+
   const tabToday = document.getElementById('tabToday');
   const tabContent = document.getElementById('tabContent');
   const tabBread = document.getElementById('tabBread');
@@ -1968,6 +2064,27 @@ if(manualSaveBtn){
   });
 }
 
+function updateMuteIcon(){
+  const on = document.getElementById('muteIconOn');
+  const off = document.getElementById('muteIconOff');
+  if(on) on.style.display = soundMuted ? 'none' : 'block';
+  if(off) off.style.display = soundMuted ? 'block' : 'none';
+}
+const muteFab = document.getElementById('muteFab');
+if(muteFab){
+  updateMuteIcon();
+  muteFab.addEventListener('click', ()=>{
+    soundMuted = !soundMuted;
+    try{ localStorage.setItem('foundation-muted', soundMuted ? '1' : '0'); }catch(e){}
+    updateMuteIcon();
+    if(!soundMuted){ ensureAudio(); playWhoosh(); }
+  });
+}
+// Unlock audio on first user interaction (browser requirement)
+['click','keydown','touchstart'].forEach(ev=>{
+  window.addEventListener(ev, ()=>{ ensureAudio(); }, { once:true });
+});
+
 const backupFab = document.getElementById('backupFab');
 const backupOverlay = document.getElementById('backupOverlay');
 const backupOutput = document.getElementById('backupOutput');
@@ -2036,7 +2153,7 @@ if(signOutBtn){
 
 // ---- Auth + startup ----
 function showChrome(show){
-  ['manualSaveBtn','backupFab'].forEach(id=>{
+  ['manualSaveBtn','backupFab','muteFab'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.style.display = show ? 'flex' : 'none';
   });
