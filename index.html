@@ -108,6 +108,17 @@
   .journal-time{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--muted);}
   .journal-text{width:100%;background:rgba(255,255,255,0.03);border:1px solid transparent;border-radius:8px;padding:8px 10px;color:var(--parchment);font-family:'Inter',sans-serif;font-size:0.9rem;line-height:1.5;resize:vertical;}
   .journal-text:focus{outline:none;border-color:var(--ink-line);background:rgba(255,255,255,0.05);}
+
+  .journal-scope{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+  .scope-presets{display:flex;gap:6px;flex-wrap:wrap;}
+  .scope-btn{background:rgba(10,20,32,0.6);border:1px solid var(--ink-line);color:var(--muted);padding:6px 12px;border-radius:999px;font-size:0.74rem;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:0.02em;transition:all .15s ease;}
+  .scope-btn:hover{color:var(--parchment);border-color:var(--accent);}
+  .scope-btn.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);box-shadow:0 0 10px rgba(56,189,248,0.2);}
+  .scope-date{display:flex;align-items:center;gap:6px;}
+  #journalDatePick{background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:8px;color:var(--parchment);padding:6px 8px;font-family:'IBM Plex Mono',monospace;font-size:0.76rem;}
+  .scope-clear{background:none;border:1px solid var(--ink-line);color:var(--muted);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:0.8rem;}
+  .scope-clear:hover{color:var(--body-c);border-color:var(--body-c);}
+  .scope-note{text-align:center;font-size:0.72rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:14px;letter-spacing:0.03em;}
   .history-row{display:flex;justify-content:space-between;gap:14px;padding:5px 0;font-size:0.85rem;border-bottom:1px solid rgba(255,255,255,0.04);}
   .history-row .v{color:var(--muted);text-align:right;}
 
@@ -447,6 +458,8 @@ const DEFAULT_STARTING_BALANCE = 9606.98;
 
 let state = null;
 let currentView = 'today';
+let journalScope = 'day';
+let journalSpecificDate = null;
 let activeDate = null;
 let resetConfirmOpen = false;
 
@@ -1250,11 +1263,49 @@ function renderMacrosView(entry){
 function renderJournalView(entry){
   const today = todayStr();
   const activeLabel = activeDate === today ? 'today' : new Date(activeDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
-  const datesWithEntries = Object.keys(state.entries)
+
+  const allDates = Object.keys(state.entries)
     .filter(d => (state.entries[d].journal||[]).length > 0)
     .sort().reverse();
 
-  const history = datesWithEntries.map(d=>{
+  // Decide which dates to show based on scope / specific date
+  let shownDates;
+  let scopeNote = '';
+  if(journalSpecificDate){
+    shownDates = allDates.filter(d => d === journalSpecificDate);
+    scopeNote = `Showing ${new Date(journalSpecificDate+'T00:00:00').toLocaleDateString(undefined,{month:'long',day:'numeric'})} only`;
+  } else if(journalScope === 'all'){
+    shownDates = allDates;
+    scopeNote = 'Showing all entries';
+  } else if(journalScope === '7' || journalScope === '30'){
+    const span = Number(journalScope);
+    const cutoff = shiftDate(activeDate, -(span-1));
+    shownDates = allDates.filter(d => d <= activeDate && d >= cutoff);
+    scopeNote = `Showing the ${span} days up to ${activeDate===today?'today':new Date(activeDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'})}`;
+  } else { // 'day'
+    shownDates = allDates.filter(d => d === activeDate);
+    scopeNote = `Showing ${activeDate===today?'today':new Date(activeDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'})} only`;
+  }
+
+  const presets = [
+    {key:'day', label:'This day'},
+    {key:'7', label:'7 days'},
+    {key:'30', label:'30 days'},
+    {key:'all', label:'All'},
+  ];
+  const scopeBar = `
+    <div class="journal-scope">
+      <div class="scope-presets">
+        ${presets.map(p=>`<button class="scope-btn ${(!journalSpecificDate && journalScope===p.key)?'active':''}" data-scope="${p.key}">${p.label}</button>`).join('')}
+      </div>
+      <div class="scope-date">
+        <input type="date" id="journalDatePick" max="${today}" value="${journalSpecificDate||''}">
+        ${journalSpecificDate ? '<button class="scope-clear" id="journalDateClear">✕</button>' : ''}
+      </div>
+    </div>
+  `;
+
+  const history = shownDates.map(d=>{
     const e = state.entries[d];
     const dLabel = new Date(d+'T00:00:00').toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
     const isToday = d === today;
@@ -1275,6 +1326,13 @@ function renderJournalView(entry){
     `;
   }).join('');
 
+  const hasAny = allDates.length > 0;
+  const historyBlock = !hasAny
+    ? '<p style="text-align:center;color:var(--muted);font-size:0.88rem;margin-top:30px;">No entries yet. Your reflections will collect here, newest first.</p>'
+    : (shownDates.length
+        ? `<div class="scope-note">${scopeNote}</div>${history}`
+        : `<div class="scope-note">${scopeNote}</div><p style="text-align:center;color:var(--muted);font-size:0.86rem;margin-top:16px;">No journal entries in this range.</p>`);
+
   return `
     ${renderDateNav()}
     <div class="journal-wrap">
@@ -1289,7 +1347,8 @@ function renderJournalView(entry){
         </div>
       </div>
 
-      ${datesWithEntries.length ? `<div class="subhead" style="text-align:center;margin:26px 0 4px;">Your journal</div>${history}` : '<p style="text-align:center;color:var(--muted);font-size:0.88rem;margin-top:30px;">No entries yet. Your reflections will collect here, newest first.</p>'}
+      ${hasAny ? `<div class="subhead" style="text-align:center;margin:26px 0 10px;">Your journal</div>${scopeBar}` : ''}
+      ${historyBlock}
     </div>
   `;
 }
@@ -1485,17 +1544,17 @@ function attachHandlers(entry){
   if(tabPending) tabPending.addEventListener('click', ()=>{ currentView='pending'; render(); });
 
   const datePrev = document.getElementById('datePrev');
-  if(datePrev) datePrev.addEventListener('click', ()=>{ activeDate = shiftDate(activeDate, -1); render(); });
+  if(datePrev) datePrev.addEventListener('click', ()=>{ activeDate = shiftDate(activeDate, -1); journalSpecificDate = null; render(); });
   const dateNext = document.getElementById('dateNext');
   if(dateNext) dateNext.addEventListener('click', ()=>{
     const next = shiftDate(activeDate, 1);
-    if(next <= todayStr()){ activeDate = next; render(); }
+    if(next <= todayStr()){ activeDate = next; journalSpecificDate = null; render(); }
   });
   const dateToday = document.getElementById('dateToday');
-  if(dateToday) dateToday.addEventListener('click', ()=>{ activeDate = todayStr(); render(); });
+  if(dateToday) dateToday.addEventListener('click', ()=>{ activeDate = todayStr(); journalSpecificDate = null; render(); });
   const dateJump = document.getElementById('dateJump');
   if(dateJump) dateJump.addEventListener('change', ()=>{
-    if(dateJump.value && dateJump.value <= todayStr()){ activeDate = dateJump.value; render(); }
+    if(dateJump.value && dateJump.value <= todayStr()){ activeDate = dateJump.value; journalSpecificDate = null; render(); }
   });
 
   document.querySelectorAll('[data-content-inc]').forEach(btn=>{
@@ -1681,6 +1740,29 @@ function attachHandlers(entry){
   if(journalInput){
     journalInput.addEventListener('keydown', (ev)=>{
       if(ev.key === 'Enter' && !ev.shiftKey){ ev.preventDefault(); addJournal(); }
+    });
+  }
+  document.querySelectorAll('[data-scope]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      journalScope = btn.getAttribute('data-scope');
+      journalSpecificDate = null;
+      render();
+    });
+  });
+  const journalDatePick = document.getElementById('journalDatePick');
+  if(journalDatePick){
+    journalDatePick.addEventListener('change', ()=>{
+      if(journalDatePick.value && journalDatePick.value <= todayStr()){
+        journalSpecificDate = journalDatePick.value;
+        render();
+      }
+    });
+  }
+  const journalDateClear = document.getElementById('journalDateClear');
+  if(journalDateClear){
+    journalDateClear.addEventListener('click', ()=>{
+      journalSpecificDate = null;
+      render();
     });
   }
   document.querySelectorAll('[data-journal-edit]').forEach(el=>{
