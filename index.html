@@ -10,21 +10,28 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
-    --ink:#14171C;
-    --ink-raised:#1D2128;
-    --ink-line:#2A2F38;
-    --parchment:#EDE7DA;
-    --muted:#9A9690;
-    --body-c:#C1623D;
-    --faith-c:#C9A24B;
-    --love-c:#C97B84;
-    --wealth-c:#4F8A8B;
-    --good-c:#6FAF7A;
+    --ink:#040810;
+    --ink-raised:#0a1420;
+    --ink-line:#17324a;
+    --parchment:#d6ecf7;
+    --muted:#6b8ea3;
+    --accent:#38bdf8;
+    --accent-dim:#0e2a3d;
+    --body-c:#38bdf8;
+    --faith-c:#e0b34a;
+    --love-c:#e07a9a;
+    --wealth-c:#34d399;
+    --good-c:#34d399;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--ink);
+    background:
+      radial-gradient(1200px 700px at 50% -10%, rgba(56,189,248,0.10), transparent 60%),
+      linear-gradient(rgba(56,189,248,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.025) 1px, transparent 1px),
+      var(--ink);
+    background-size:auto, 44px 44px, 44px 44px, auto;
     color:var(--parchment);
     font-family:'Inter',sans-serif;
     -webkit-font-smoothing:antialiased;
@@ -33,33 +40,38 @@
   .wrap{max-width:960px;margin:0 auto;padding:32px 18px 90px;}
   header.hero{text-align:center;margin-bottom:22px;}
   .hero h1{
-    font-family:'Fraunces',serif;font-style:italic;font-weight:700;
-    font-size:clamp(1.9rem,6vw,2.8rem);margin:0 0 6px;letter-spacing:-0.01em;
+    font-family:'IBM Plex Mono',monospace;font-weight:600;
+    font-size:clamp(1.5rem,5vw,2.2rem);margin:0 0 6px;letter-spacing:0.35em;
+    text-transform:uppercase;color:#eaf7ff;
+    text-shadow:0 0 18px rgba(56,189,248,0.5);
   }
-  .hero p{color:var(--muted);margin:0;font-size:0.92rem;}
+  .hero p{color:var(--muted);margin:0;font-size:0.82rem;letter-spacing:0.05em;}
 
-  .year-goal{max-width:600px;margin:0 auto 22px;background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:16px;padding:16px 20px;}
+  .year-goal{max-width:600px;margin:0 auto 22px;background:linear-gradient(180deg, rgba(23,50,74,0.3), rgba(10,20,32,0.55));border:1px solid var(--ink-line);border-radius:16px;padding:16px 20px;box-shadow:0 0 24px rgba(56,189,248,0.06);}
   .year-goal .yg-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
-  .year-goal .yg-head h3{font-family:'Fraunces',serif;font-weight:600;font-size:0.95rem;margin:0;}
-  .year-goal .yg-pct{font-family:'IBM Plex Mono',monospace;font-size:0.85rem;color:var(--wealth-c);}
+  .year-goal .yg-head h3{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:0.82rem;margin:0;letter-spacing:0.1em;text-transform:uppercase;}
+  .year-goal .yg-pct{font-family:'IBM Plex Mono',monospace;font-size:0.85rem;color:var(--accent);}
   .year-goal .yg-track{height:10px;border-radius:6px;background:rgba(255,255,255,0.06);overflow:hidden;margin-bottom:8px;}
-  .year-goal .yg-fill{height:100%;border-radius:6px;background:var(--wealth-c);transition:width .3s ease;}
+  .year-goal .yg-fill{height:100%;border-radius:6px;background:linear-gradient(90deg, #0ea5e9, var(--accent));box-shadow:0 0 12px rgba(56,189,248,0.5);transition:width .3s ease;}
   .year-goal .yg-sub{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);flex-wrap:wrap;gap:6px;}
   .year-goal .yg-sub input{width:90px;background:transparent;border:none;border-bottom:1px dashed var(--ink-line);color:var(--parchment);font-family:'IBM Plex Mono',monospace;font-size:0.75rem;padding:1px 0;}
 
   .tabs{display:flex;justify-content:center;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
-  .tab-btn{background:none;border:1px solid var(--ink-line);color:var(--muted);padding:8px 18px;border-radius:999px;font-size:0.82rem;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:6px;}
-  .tab-btn.active{background:var(--ink-line);color:var(--parchment);}
-  .tab-badge{background:var(--wealth-c);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:0.68rem;font-weight:600;border-radius:999px;padding:1px 6px;}
+  .tab-btn{background:rgba(10,20,32,0.6);border:1px solid var(--ink-line);color:var(--muted);padding:8px 18px;border-radius:999px;font-size:0.78rem;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:0.03em;display:flex;align-items:center;gap:6px;transition:all .15s ease;}
+  .tab-btn:hover{color:var(--parchment);border-color:var(--accent);}
+  .tab-btn.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);box-shadow:0 0 14px rgba(56,189,248,0.25);}
+  .tab-badge{background:var(--accent);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:0.68rem;font-weight:600;border-radius:999px;padding:1px 6px;}
 
   .keystone{
     display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:22px;
-    background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:20px;
+    background:linear-gradient(180deg, rgba(23,50,74,0.35), rgba(10,20,32,0.6));
+    border:1px solid var(--ink-line);border-radius:20px;
     padding:18px 24px;margin:0 auto 8px;max-width:600px;
+    box-shadow:0 0 30px rgba(56,189,248,0.06), inset 0 0 20px rgba(56,189,248,0.03);
   }
   .keystone .stat{text-align:center;min-width:90px;}
   .keystone .stat .num{font-family:'IBM Plex Mono',monospace;font-size:1.4rem;font-weight:600;}
-  .keystone .stat.featured .num{font-size:1.9rem;color:var(--wealth-c);}
+  .keystone .stat.featured .num{font-size:1.9rem;color:var(--accent);text-shadow:0 0 16px rgba(56,189,248,0.4);}
   .keystone .stat .label{font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;}
   .keystone .divider{width:1px;height:34px;background:var(--ink-line);}
 
@@ -70,6 +82,23 @@
   .history-toggle{background:none;border:1px solid var(--ink-line);color:var(--muted);padding:8px 16px;border-radius:999px;font-size:0.8rem;cursor:pointer;font-family:'Inter',sans-serif;}
   .history-toggle:hover{color:var(--parchment);}
   #historyDatePicker{background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:8px;color:var(--parchment);padding:7px 10px;font-family:'IBM Plex Mono',monospace;font-size:0.82rem;}
+
+  .date-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .date-arrow{width:38px;height:38px;border-radius:10px;border:1px solid var(--ink-line);background:var(--ink-raised);color:var(--parchment);font-size:1.3rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .date-arrow:hover:not([disabled]){border-color:var(--accent);color:var(--accent);box-shadow:0 0 12px rgba(56,189,248,0.25);}
+  .date-arrow[disabled]{opacity:0.3;cursor:not-allowed;}
+  .date-nav-center{display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;}
+  #dateJump{background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:8px;color:var(--parchment);padding:7px 10px;font-family:'IBM Plex Mono',monospace;font-size:0.82rem;}
+  .date-nav-label{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+  .date-today-btn{background:none;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:7px 14px;font-size:0.76rem;cursor:pointer;font-family:'Inter',sans-serif;}
+  .date-today-btn:hover{background:rgba(56,189,248,0.12);}
+  .past-edit-banner{text-align:center;font-size:0.76rem;color:var(--faith-c);background:rgba(201,162,75,0.1);border:1px solid rgba(201,162,75,0.3);border-radius:8px;padding:6px 12px;margin-bottom:16px;}
+
+  .pending-note-edit{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);border-radius:6px;color:var(--parchment);font-family:'Inter',sans-serif;font-size:0.8rem;padding:5px 8px;margin-top:4px;}
+  .confirmed-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(111,175,122,0.05);border:1px solid rgba(111,175,122,0.18);border-radius:10px;margin-bottom:8px;gap:10px;}
+  .confirmed-item .info{display:flex;flex-direction:column;gap:2px;flex:1;}
+  .confirmed-item .amt{font-family:'IBM Plex Mono',monospace;font-size:0.95rem;font-weight:600;}
+  .confirmed-item .meta{font-size:0.72rem;color:var(--muted);}
   .history-row{display:flex;justify-content:space-between;gap:14px;padding:5px 0;font-size:0.85rem;border-bottom:1px solid rgba(255,255,255,0.04);}
   .history-row .v{color:var(--muted);text-align:right;}
 
@@ -79,11 +108,11 @@
   .pillars{display:grid;grid-template-columns:1fr;gap:16px;}
   @media (min-width:680px){.pillars{grid-template-columns:1fr 1fr;}}
 
-  .card{background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:14px;overflow:hidden;}
-  .card .accent{height:4px;width:100%;}
+  .card{background:linear-gradient(180deg, rgba(23,50,74,0.22), rgba(10,20,32,0.55));border:1px solid var(--ink-line);border-radius:14px;overflow:hidden;backdrop-filter:blur(4px);box-shadow:0 0 20px rgba(0,0,0,0.35);}
+  .card .accent{height:3px;width:100%;box-shadow:0 0 12px currentColor;}
   .card .inner{padding:18px 20px 20px;}
   .card .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;gap:10px;}
-  .card .head h2{font-family:'Fraunces',serif;font-weight:600;font-size:1.1rem;margin:0;}
+  .card .head h2{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:0.95rem;margin:0;letter-spacing:0.08em;text-transform:uppercase;}
   .card .streak{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--muted);white-space:nowrap;}
 
   .bars{display:flex;gap:4px;margin:0 0 14px;}
@@ -112,11 +141,12 @@
     flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);border-radius:8px;
     padding:8px 10px;color:var(--parchment);font-family:'IBM Plex Mono',monospace;font-size:0.88rem;
   }
-  .add-btn{background:var(--wealth-c);color:var(--ink);border:none;padding:8px 16px;border-radius:8px;font-size:0.82rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;flex:0 0 auto;}
+  .add-btn{background:var(--accent);color:#04121c;border:none;padding:8px 16px;border-radius:8px;font-size:0.82rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;flex:0 0 auto;box-shadow:0 0 14px rgba(56,189,248,0.35);}
+  .add-btn:hover{box-shadow:0 0 18px rgba(56,189,248,0.55);}
   .add-btn:hover{opacity:0.85;}
   .pending-tag{font-size:0.68rem;color:var(--muted);font-style:italic;margin:0 0 10px;}
   .progress-track{height:8px;border-radius:6px;background:rgba(255,255,255,0.06);overflow:hidden;margin:10px 0 6px;}
-  .progress-fill{height:100%;border-radius:6px;background:var(--wealth-c);transition:width .3s ease;}
+  .progress-fill{height:100%;border-radius:6px;background:var(--wealth-c);box-shadow:0 0 10px rgba(52,211,153,0.4);transition:width .3s ease;}
   .progress-label{font-size:0.75rem;color:var(--muted);display:flex;justify-content:space-between;}
 
   .note-add-row{display:flex;gap:8px;margin-top:8px;}
@@ -128,7 +158,7 @@
   .note-delete{background:none;border:1px solid var(--ink-line);color:var(--muted);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:0.85rem;flex:0 0 auto;}
   .note-delete:hover{color:var(--body-c);border-color:var(--body-c);}
 
-  .reflect h3{font-family:'Fraunces',serif;font-weight:600;font-size:1rem;margin:0 0 8px;color:var(--parchment);}
+  .reflect h3{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:0.85rem;margin:0 0 8px;color:var(--parchment);letter-spacing:0.08em;text-transform:uppercase;}
 
   .footer-row{display:flex;justify-content:center;margin-top:30px;}
   .reset-btn{background:none;border:1px solid var(--ink-line);color:var(--muted);font-size:0.75rem;padding:8px 16px;border-radius:999px;cursor:pointer;font-family:'Inter',sans-serif;}
@@ -150,7 +180,7 @@
   .pending-item .info .meta{font-size:0.72rem;color:var(--muted);}
   .pending-edit{width:120px;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);border-radius:6px;color:var(--parchment);font-family:'IBM Plex Mono',monospace;font-size:0.95rem;padding:5px 8px;}
   .pending-actions{display:flex;gap:6px;flex:0 0 auto;}
-  .confirm-btn{background:var(--wealth-c);color:var(--ink);border:none;padding:7px 14px;border-radius:8px;font-size:0.78rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;}
+  .confirm-btn{background:var(--accent);color:#04121c;border:none;padding:7px 14px;border-radius:8px;font-size:0.78rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;box-shadow:0 0 12px rgba(56,189,248,0.3);}
   .confirm-btn:hover{opacity:0.85;}
   .delete-btn{background:none;border:1px solid var(--ink-line);color:var(--muted);padding:7px 12px;border-radius:8px;font-size:0.78rem;cursor:pointer;font-family:'Inter',sans-serif;}
   .delete-btn:hover{color:var(--body-c);border-color:var(--body-c);}
@@ -165,7 +195,7 @@
   .platform-label{font-size:0.78rem;color:var(--muted);margin-bottom:10px;}
 
   .reading-item{border:1px solid var(--ink-line);border-radius:10px;padding:10px 14px;margin-bottom:10px;background:rgba(255,255,255,0.02);}
-  .reading-item summary{cursor:pointer;font-family:'Fraunces',serif;font-weight:600;font-size:0.98rem;list-style:none;}
+  .reading-item summary{cursor:pointer;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:0.9rem;list-style:none;letter-spacing:0.04em;}
   .reading-item summary::-webkit-details-marker{display:none;}
   .reading-item summary::before{content:'+ ';color:var(--faith-c);}
   .reading-item[open] summary::before{content:'− ';}
@@ -205,7 +235,7 @@
   .ring-center{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;}
   .ring-num{font-family:'IBM Plex Mono',monospace;font-size:1.25rem;font-weight:600;}
   .ring-label{font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;}
-  .ring-title{font-family:'Fraunces',serif;font-weight:600;font-size:0.9rem;margin-top:10px;}
+  .ring-title{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:0.8rem;margin-top:10px;letter-spacing:0.08em;text-transform:uppercase;}
   .ring-sub{font-size:0.75rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:2px;}
 
   .food-add-row{display:flex;gap:8px;flex-wrap:wrap;}
@@ -219,25 +249,25 @@
 
   .save-fab{
     position:fixed;top:16px;right:16px;width:44px;height:44px;border-radius:50%;
-    background:var(--ink-raised);border:1px solid var(--ink-line);color:var(--parchment);
+    background:var(--ink-raised);border:1px solid var(--ink-line);color:var(--accent);
     display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:50;
-    box-shadow:0 2px 10px rgba(0,0,0,0.35);transition:transform .15s ease, background .15s ease;
+    box-shadow:0 0 14px rgba(56,189,248,0.2);transition:transform .15s ease, box-shadow .15s ease;
   }
-  .save-fab:hover{background:rgba(255,255,255,0.08);}
+  .save-fab:hover{box-shadow:0 0 20px rgba(56,189,248,0.45);border-color:var(--accent);}
   .save-fab:active{transform:scale(0.92);}
   .save-fab svg{width:20px;height:20px;}
   .save-fab.pulsing{transform:scale(1.12);}
   #backupFab{top:68px;}
 
   .backup-overlay{
-    position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);
-    z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;
+    position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(2,6,12,0.75);
+    z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);
   }
   .backup-card{
-    background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:16px;
-    padding:22px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto;
+    background:linear-gradient(180deg, rgba(23,50,74,0.4), rgba(10,20,32,0.9));border:1px solid var(--ink-line);border-radius:16px;
+    padding:22px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 0 40px rgba(56,189,248,0.1);
   }
-  .backup-card h3{font-family:'Fraunces',serif;font-weight:600;font-size:1.1rem;margin:0 0 10px;}
+  .backup-card h3{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:0.95rem;margin:0 0 10px;letter-spacing:0.08em;text-transform:uppercase;}
   .backup-card p{font-size:0.82rem;color:var(--muted);margin:0 0 10px;line-height:1.5;}
   .backup-card textarea{
     width:100%;min-height:100px;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);
@@ -248,22 +278,28 @@
   .backup-actions{display:flex;gap:10px;margin-top:10px;}
 
   .auth-screen{
-    position:fixed;top:0;left:0;width:100%;height:100%;background:var(--ink);
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:
+      radial-gradient(900px 500px at 50% -10%, rgba(56,189,248,0.12), transparent 60%),
+      linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px),
+      var(--ink);
+    background-size:auto, 44px 44px, 44px 44px, auto;
     z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;
   }
   .auth-card{
-    background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:18px;
-    padding:32px 26px;max-width:380px;width:100%;text-align:center;
+    background:linear-gradient(180deg, rgba(23,50,74,0.35), rgba(10,20,32,0.8));border:1px solid var(--ink-line);border-radius:18px;
+    padding:32px 26px;max-width:380px;width:100%;text-align:center;box-shadow:0 0 40px rgba(56,189,248,0.12);
   }
-  .auth-card h1{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:1.8rem;margin:0 0 4px;}
+  .auth-card h1{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:1.3rem;margin:0 0 4px;letter-spacing:0.3em;text-transform:uppercase;color:#eaf7ff;text-shadow:0 0 16px rgba(56,189,248,0.5);}
   .auth-card p{color:var(--muted);font-size:0.88rem;margin:0 0 22px;}
   .auth-card input{
     width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);border-radius:10px;
     padding:12px 14px;color:var(--parchment);font-family:'Inter',sans-serif;font-size:0.95rem;margin-bottom:12px;
   }
-  .auth-card input:focus{outline:2px solid rgba(255,255,255,0.25);}
+  .auth-card input:focus{outline:2px solid rgba(56,189,248,0.4);}
   .auth-card .add-btn{width:100%;padding:12px;font-size:0.95rem;margin-top:4px;}
-  .auth-error{color:var(--body-c);font-size:0.82rem;margin-top:14px;min-height:18px;line-height:1.4;}
+  .auth-error{color:var(--love-c);font-size:0.82rem;margin-top:14px;min-height:18px;line-height:1.4;}
 </style>
 </head>
 <body>
@@ -402,8 +438,7 @@ const DEFAULT_STARTING_BALANCE = 9606.98;
 
 let state = null;
 let currentView = 'today';
-let historyOpen = false;
-let historyDate = null;
+let activeDate = null;
 let resetConfirmOpen = false;
 
 function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
@@ -455,6 +490,7 @@ function migrateEntry(e){
   delete e.wealth.revenue;
   delete e.wealth.amount;
   delete e.wealth.amountConfirmed;
+  e.wealth.profitEntries.forEach(p=>{ if(typeof p.note !== 'string') p.note = ''; });
 
   if(!e.body) e.body = {};
   if(typeof e.body.done !== 'boolean') e.body.done = false;
@@ -680,7 +716,19 @@ function pendingItems(){
   dates.forEach(d=>{
     const e = state.entries[d];
     (e.wealth.profitEntries||[]).forEach(p=>{
-      if(!p.confirmed) items.push({date:d, type:'profit', id:p.id, amount:p.amount});
+      if(!p.confirmed) items.push({date:d, type:'profit', id:p.id, amount:p.amount, note:p.note||''});
+    });
+  });
+  return items;
+}
+
+function confirmedProfitItems(){
+  const dates = Object.keys(state.entries).sort().reverse();
+  const items = [];
+  dates.forEach(d=>{
+    const e = state.entries[d];
+    (e.wealth.profitEntries||[]).forEach(p=>{
+      if(p.confirmed) items.push({date:d, type:'profit', id:p.id, amount:p.amount, note:p.note||''});
     });
   });
   return items;
@@ -806,7 +854,8 @@ function renderNoteSection(pillarKey, entry, placeholder){
 
 function render(){
   const today = todayStr();
-  const entry = getEntry(today);
+  if(!activeDate) activeDate = today;
+  const entry = getEntry(activeDate);
   const keystoneStreak = computeStreak(allFourDone);
   const money = totalMoney();
   const pending = pendingItems();
@@ -876,17 +925,23 @@ function renderYearGoal(){
   `;
 }
 
-function renderHistoryBar(){
-  let panel = `
-    <div class="history-bar">
-      <button class="history-toggle" id="historyToggle">📅 ${historyOpen ? 'Hide calendar' : 'Look back on a day'}</button>
-      ${historyOpen ? `<input type="date" id="historyDatePicker" max="${todayStr()}" value="${historyDate||''}">` : ''}
+function renderDateNav(){
+  const today = todayStr();
+  const isToday = activeDate === today;
+  const label = new Date(activeDate+'T00:00:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+  const atMax = activeDate >= today;
+  return `
+    <div class="date-nav">
+      <button class="date-arrow" id="datePrev" title="Previous day">‹</button>
+      <div class="date-nav-center">
+        <input type="date" id="dateJump" max="${today}" value="${activeDate}">
+        <div class="date-nav-label">${isToday ? 'Today' : label}</div>
+      </div>
+      <button class="date-arrow" id="dateNext" title="Next day" ${atMax?'disabled':''}>›</button>
+      ${!isToday ? `<button class="date-today-btn" id="dateToday">Jump to today</button>` : ''}
     </div>
+    ${!isToday ? `<div class="past-edit-banner">You're editing a past day — ${label}</div>` : ''}
   `;
-  if(historyOpen && historyDate){
-    panel += renderHistoryCard(historyDate);
-  }
-  return panel;
 }
 function renderBreadSnippet(dateStr){
   const {psalm, proverb} = readingForDate(dateStr);
@@ -898,7 +953,7 @@ function renderBreadSnippet(dateStr){
     <div class="card" style="margin-bottom:24px;">
       <div class="accent" style="background:var(--faith-c);"></div>
       <div class="inner">
-        <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:0.95rem;margin:0 0 10px;">That day's Daily Bread</h3>
+        <h3 style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:0.82rem;letter-spacing:0.08em;text-transform:uppercase;margin:0 0 10px;">That day's Daily Bread</h3>
         <div class="history-row">
           <span>Reading</span>
           <span class="v"><a href="${psalmLink}" target="_blank" rel="noopener" class="read-link">Psalm ${psalm}</a> · <a href="${proverbLink}" target="_blank" rel="noopener" class="read-link">Proverbs ${proverb}</a></span>
@@ -912,44 +967,12 @@ function renderBreadSnippet(dateStr){
     </div>
   `;
 }
-function renderHistoryCard(dateStr){
-  const e = state.entries[dateStr];
-  const dateLabel = new Date(dateStr+'T00:00:00').toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
-  if(!e){
-    return `
-      <div class="card" style="margin-bottom:16px;"><div class="inner"><h3 style="font-family:'Fraunces',serif;margin:0 0 6px;">${dateLabel}</h3><p style="color:var(--muted);font-size:0.85rem;margin:0;">Nothing logged that day.</p></div></div>
-      ${renderBreadSnippet(dateStr)}
-    `;
-  }
-  const yesNo = b => b ? '✓ yes' : '— no';
-  const profitEntries = e.wealth.profitEntries||[];
-  const profitLines = profitEntries.length
-    ? profitEntries.map(p=> fmtMoney(p.amount)+(p.confirmed?' (confirmed)':' (pending)')).join(', ')
-    : '—';
-  const contentLines = CONTENT_COMBOS.map(c=> escapeHtml(c.brand+' '+c.platform)+': '+(e.content&&e.content[c.key]?e.content[c.key]:0)).join(' · ');
-  const notes = ['body','faith','love','wealth'].flatMap(k=>(e[k].notes||[]).map(n=>n.text)).filter(Boolean).map(escapeHtml).join(' · ');
-  return `
-    <div class="card" style="margin-bottom:16px;">
-      <div class="inner">
-        <h3 style="font-family:'Fraunces',serif;margin:0 0 12px;">${dateLabel}</h3>
-        <div class="history-row"><span>Trained</span><span class="v">${yesNo(e.body.done)}</span></div>
-        <div class="history-row"><span>Scripture / Prayer</span><span class="v">${yesNo(e.faith.bible)} / ${yesNo(e.faith.prayer)}</span></div>
-        <div class="history-row"><span>Love (her / family / friends)</span><span class="v">${yesNo(e.love.gf)} / ${yesNo(e.love.family)} / ${yesNo(e.love.friends)}</span></div>
-        <div class="history-row"><span>Profit logged</span><span class="v">${escapeHtml(profitLines)}</span></div>
-        <div class="history-row" style="align-items:flex-start;"><span>Content posted</span><span class="v" style="text-align:right;">${contentLines}</span></div>
-        ${e.reflection ? `<div style="margin-top:10px;font-size:0.85rem;color:var(--parchment);"><em>"${escapeHtml(e.reflection)}"</em></div>` : ''}
-        ${notes ? `<div style="margin-top:8px;font-size:0.8rem;color:var(--muted);">Notes: ${notes}</div>` : ''}
-      </div>
-    </div>
-    ${renderBreadSnippet(dateStr)}
-  `;
-}
 
 function renderTodayView(entry){
   return `
-      ${renderHistoryBar()}
+      ${renderDateNav()}
       <div class="dots">
-        ${PILLARS.map(p=>`<div class="dot" style="background:${primaryDone(p.key,entry)?p.colorHex:'#2A2F38'}"></div>`).join('')}
+        ${PILLARS.map(p=>`<div class="dot" style="background:${primaryDone(p.key,entry)?p.colorHex:'#17324a'};${primaryDone(p.key,entry)?'box-shadow:0 0 8px '+p.colorHex:''}"></div>`).join('')}
       </div>
 
       <div class="pillars">
@@ -962,8 +985,8 @@ function renderTodayView(entry){
       <div class="card reflect" style="margin-top:16px;">
         <div class="accent" style="background:linear-gradient(90deg, var(--body-c), var(--faith-c), var(--love-c), var(--wealth-c));"></div>
         <div class="inner">
-          <h3>Today's reflection</h3>
-          <textarea class="note" id="reflection" placeholder="One sentence on how today went...">${entry.reflection||''}</textarea>
+          <h3>Reflection</h3>
+          <textarea class="note" id="reflection" placeholder="One sentence on how the day went...">${entry.reflection||''}</textarea>
         </div>
       </div>
 
@@ -985,7 +1008,8 @@ function renderContentView(entry){
   const totalToday = CONTENT_COMBOS.reduce((s,c)=> s + (Number(entry.content[c.key])||0), 0);
   const totalTarget = CONTENT_COMBOS.reduce((s,c)=> s + (Number(state.contentTargets[c.key])||0), 0);
   return `
-    <p class="pending-tag" style="text-align:center;margin-bottom:18px;">Posted ${totalToday} of ${totalTarget} videos today across both pages.</p>
+    ${renderDateNav()}
+    <p class="pending-tag" style="text-align:center;margin-bottom:18px;">Posted ${totalToday} of ${totalTarget} videos across both pages.</p>
     <div class="pillars">
       ${CONTENT_COMBOS.map(c=>renderContentCard(c, entry)).join('')}
     </div>
@@ -1034,7 +1058,7 @@ function renderBreadView(){
       <div class="card" style="margin-bottom:16px;">
         <div class="accent" style="background:var(--faith-c);"></div>
         <div class="inner">
-          <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:1rem;margin:0 0 12px;">Today's reading</h3>
+          <h3 style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;margin:0 0 12px;">Today's reading</h3>
           <p style="font-size:0.78rem;color:var(--muted);margin:0 0 14px;">Scripture text isn't reproduced here for copyright reasons — tap through to read the full ESV chapter.</p>
           <details class="reading-item">
             <summary>Psalm ${psalm}</summary>
@@ -1056,7 +1080,7 @@ function renderBreadView(){
       <div class="card" style="margin-bottom:16px;">
         <div class="accent" style="background:var(--wealth-c);"></div>
         <div class="inner">
-          <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:1rem;margin:0 0 12px;">Quote of the day</h3>
+          <h3 style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;margin:0 0 12px;">Quote of the day</h3>
           <p style="font-family:'Fraunces',serif;font-style:italic;font-size:1.05rem;margin:0 0 8px;line-height:1.5;">"${escapeHtml(quote.text)}"</p>
           <p style="font-size:0.8rem;color:var(--muted);margin:0;">— ${escapeHtml(quote.author)}</p>
         </div>
@@ -1065,7 +1089,7 @@ function renderBreadView(){
       <div class="card">
         <div class="accent" style="background:var(--love-c);"></div>
         <div class="inner">
-          <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:1rem;margin:0 0 4px;">Affirmations</h3>
+          <h3 style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;margin:0 0 4px;">Affirmations</h3>
           <div class="subhead">Core — every day</div>
           <ul class="affirm-list">
             ${FIXED_AFFIRMATIONS.map(a=>`<li>${escapeHtml(a)}</li>`).join('')}
@@ -1097,6 +1121,7 @@ function renderCutView(entry){
   const bfDelta = computeCutDelta('bodyFat', true);
 
   return `
+    ${renderDateNav()}
     <div class="card cut-stats-card">
       <div class="accent" style="background:var(--body-c);"></div>
       <div class="inner">
@@ -1169,14 +1194,15 @@ function renderMacrosView(entry){
   const foods = entry.macros.foods || [];
 
   return `
+    ${renderDateNav()}
     <div class="card cut-stats-card">
       <div class="accent" style="background:var(--wealth-c);"></div>
       <div class="inner">
         <div class="head" style="margin-bottom:6px;">
-          <h2>Today's macros</h2>
+          <h2>Macros</h2>
           <div class="streak">${streak>0?'🔥 '+streak+'d':'—'}</div>
         </div>
-        ${win ? '<div class="delta-tag good" style="margin-bottom:10px;">🎉 Macro goals hit today</div>' : ''}
+        ${win ? '<div class="delta-tag good" style="margin-bottom:10px;">🎉 Macro goals hit</div>' : ''}
         <div class="ring-row">
           ${macroRingBlock('Calories', totals.calories, calorieGoal, 'cal', true)}
           ${macroRingBlock('Protein', totals.protein, proteinGoal, 'g', false)}
@@ -1235,18 +1261,19 @@ function renderPendingView(pending){
     </div>
   `;
   if(pending.length===0){
-    return `<div class="pending-section">${summary}<div class="empty-pending">Nothing pending — every dollar you've logged is confirmed.</div></div>`;
+    return `<div class="pending-section">${summary}<div class="empty-pending">Nothing pending — every dollar you've logged is confirmed.</div>${renderConfirmedLog()}</div>`;
   }
   return `
     <div class="pending-section">
       ${summary}
-      <p class="pending-tag" style="text-align:center;margin-bottom:18px;">Edit the amount, delete it if it was a mistake, or approve it once the money actually lands.</p>
+      <p class="pending-tag" style="text-align:center;margin-bottom:18px;">Edit the amount or note, delete it if it was a mistake, or approve it once the money actually lands.</p>
       ${pending.map(item=>{
         const dateLabel = new Date(item.date+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
         return `
           <div class="pending-item">
             <div class="info">
               <input type="number" step="0.01" class="pending-edit" data-edit="${item.date}|${item.id}" value="${item.amount}">
+              <input type="text" class="pending-note-edit" data-note-edit-pending="${item.date}|${item.id}" placeholder="Add a note" value="${escapeHtml(item.note||'')}">
               <div class="meta">Profit · ${dateLabel}</div>
             </div>
             <div class="pending-actions">
@@ -1256,7 +1283,27 @@ function renderPendingView(pending){
           </div>
         `;
       }).join('')}
+      ${renderConfirmedLog()}
     </div>
+  `;
+}
+function renderConfirmedLog(){
+  const items = confirmedProfitItems();
+  if(items.length===0) return '';
+  return `
+    <div class="subhead" style="text-align:center;margin-top:26px;">Confirmed profit log</div>
+    ${items.map(item=>{
+      const dateLabel = new Date(item.date+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
+      return `
+        <div class="confirmed-item">
+          <div class="info">
+            <div class="amt" style="color:${item.amount<0?'var(--body-c)':'var(--good-c)'}">${item.amount<0?'':'+'}${fmtMoney(item.amount)}</div>
+            <div class="meta">${item.note ? escapeHtml(item.note)+' · ' : ''}${dateLabel}</div>
+          </div>
+          <button class="delete-btn" data-unconfirm="${item.date}|${item.id}">Undo</button>
+        </div>
+      `;
+    }).join('')}
   `;
 }
 
@@ -1352,9 +1399,12 @@ function renderWealthCard(entry){
         <div class="subhead">Profit (business) — add each payout as it happens</div>
         <div class="wealth-row">
           <input type="number" step="0.01" placeholder="+/- amount" id="wealthProfitInput">
+        </div>
+        <div class="wealth-row">
+          <input type="text" placeholder="Note (e.g. Ballistic Brew payout)" id="wealthProfitNote">
           <button class="add-btn" id="addProfitBtn">Add</button>
         </div>
-        ${todaysCount>0 ? '<div class="pending-tag">'+todaysCount+' entr'+(todaysCount===1?'y':'ies')+' logged today — manage them in Pending</div>' : ''}
+        ${todaysCount>0 ? '<div class="pending-tag">'+todaysCount+' entr'+(todaysCount===1?'y':'ies')+' logged this day — manage them in Pending</div>' : ''}
         <div class="progress-label" style="margin-bottom:14px;"><span>Confirmed profit total: ${fmtMoney(profitTotal)}</span></div>
 
         <div class="subhead">Notes</div>
@@ -1378,16 +1428,18 @@ function attachHandlers(entry){
   if(tabMacros) tabMacros.addEventListener('click', ()=>{ currentView='macros'; render(); });
   if(tabPending) tabPending.addEventListener('click', ()=>{ currentView='pending'; render(); });
 
-  const historyToggle = document.getElementById('historyToggle');
-  if(historyToggle) historyToggle.addEventListener('click', ()=>{
-    historyOpen = !historyOpen;
-    if(!historyOpen) historyDate = null;
-    render();
+  const datePrev = document.getElementById('datePrev');
+  if(datePrev) datePrev.addEventListener('click', ()=>{ activeDate = shiftDate(activeDate, -1); render(); });
+  const dateNext = document.getElementById('dateNext');
+  if(dateNext) dateNext.addEventListener('click', ()=>{
+    const next = shiftDate(activeDate, 1);
+    if(next <= todayStr()){ activeDate = next; render(); }
   });
-  const historyDatePicker = document.getElementById('historyDatePicker');
-  if(historyDatePicker) historyDatePicker.addEventListener('change', ()=>{
-    historyDate = historyDatePicker.value;
-    render();
+  const dateToday = document.getElementById('dateToday');
+  if(dateToday) dateToday.addEventListener('click', ()=>{ activeDate = todayStr(); render(); });
+  const dateJump = document.getElementById('dateJump');
+  if(dateJump) dateJump.addEventListener('change', ()=>{
+    if(dateJump.value && dateJump.value <= todayStr()){ activeDate = dateJump.value; render(); }
   });
 
   document.querySelectorAll('[data-content-inc]').forEach(btn=>{
@@ -1417,11 +1469,14 @@ function attachHandlers(entry){
 
   function addProfitEntry(){
     const input = document.getElementById('wealthProfitInput');
+    const noteInput = document.getElementById('wealthProfitNote');
     if(!input) return;
     const val = Number(input.value)||0;
+    const note = noteInput ? noteInput.value.trim() : '';
     if(val !== 0){
-      entry.wealth.profitEntries.push({id:genId(), amount:val, confirmed:false});
+      entry.wealth.profitEntries.push({id:genId(), amount:val, note:note, confirmed:false});
       input.value = '';
+      if(noteInput) noteInput.value = '';
       persist();
       flashToast('Added to pending');
       render();
@@ -1432,6 +1487,12 @@ function attachHandlers(entry){
   const wealthProfitInput = document.getElementById('wealthProfitInput');
   if(wealthProfitInput){
     wealthProfitInput.addEventListener('keydown', (ev)=>{
+      if(ev.key === 'Enter'){ ev.preventDefault(); addProfitEntry(); }
+    });
+  }
+  const wealthProfitNote = document.getElementById('wealthProfitNote');
+  if(wealthProfitNote){
+    wealthProfitNote.addEventListener('keydown', (ev)=>{
       if(ev.key === 'Enter'){ ev.preventDefault(); addProfitEntry(); }
     });
   }
@@ -1459,6 +1520,18 @@ function attachHandlers(entry){
       render();
     });
   });
+  document.querySelectorAll('[data-unconfirm]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const [date, id] = btn.getAttribute('data-unconfirm').split('|');
+      const e = state.entries[date];
+      if(!e) return;
+      const item = (e.wealth.profitEntries||[]).find(p=>p.id===id);
+      if(item) item.confirmed = false;
+      persist();
+      flashToast('Moved back to pending');
+      render();
+    });
+  });
   document.querySelectorAll('[data-edit]').forEach(input=>{
     input.addEventListener('blur', ()=>{
       const [date, id] = input.getAttribute('data-edit').split('|');
@@ -1469,6 +1542,18 @@ function attachHandlers(entry){
         item.amount = Number(input.value)||0;
         persist();
         flashToast('Updated');
+      }
+    });
+  });
+  document.querySelectorAll('[data-note-edit-pending]').forEach(input=>{
+    input.addEventListener('blur', ()=>{
+      const [date, id] = input.getAttribute('data-note-edit-pending').split('|');
+      const e = state.entries[date];
+      if(!e) return;
+      const item = (e.wealth.profitEntries||[]).find(p=>p.id===id);
+      if(item){
+        item.note = input.value.trim();
+        persist();
       }
     });
   });
