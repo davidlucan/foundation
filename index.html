@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,600;1,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --ink:#14171C;
@@ -245,19 +246,47 @@
   }
   .backup-card hr{border:none;border-top:1px solid var(--ink-line);margin:16px 0;}
   .backup-actions{display:flex;gap:10px;margin-top:10px;}
+
+  .auth-screen{
+    position:fixed;top:0;left:0;width:100%;height:100%;background:var(--ink);
+    z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;
+  }
+  .auth-card{
+    background:var(--ink-raised);border:1px solid var(--ink-line);border-radius:18px;
+    padding:32px 26px;max-width:380px;width:100%;text-align:center;
+  }
+  .auth-card h1{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:1.8rem;margin:0 0 4px;}
+  .auth-card p{color:var(--muted);font-size:0.88rem;margin:0 0 22px;}
+  .auth-card input{
+    width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--ink-line);border-radius:10px;
+    padding:12px 14px;color:var(--parchment);font-family:'Inter',sans-serif;font-size:0.95rem;margin-bottom:12px;
+  }
+  .auth-card input:focus{outline:2px solid rgba(255,255,255,0.25);}
+  .auth-card .add-btn{width:100%;padding:12px;font-size:0.95rem;margin-top:4px;}
+  .auth-error{color:var(--body-c);font-size:0.82rem;margin-top:14px;min-height:18px;line-height:1.4;}
 </style>
 </head>
 <body>
+<div id="authScreen" class="auth-screen" style="display:none;">
+  <div class="auth-card">
+    <h1>The Foundation</h1>
+    <p>Sign in to continue</p>
+    <input type="email" id="authEmail" placeholder="Email" autocomplete="username" inputmode="email">
+    <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password">
+    <button class="add-btn" id="authLoginBtn">Sign in</button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
 <div id="app"><div class="loading">loading…</div></div>
 <div class="toast" id="toast">Saved</div>
-<button class="save-fab" id="manualSaveBtn" title="Save now">
+<button class="save-fab" id="manualSaveBtn" title="Save now" style="display:none;">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
     <polyline points="17 21 17 13 7 13 7 21"></polyline>
     <polyline points="7 3 7 8 15 8"></polyline>
   </svg>
 </button>
-<button class="save-fab" id="backupFab" title="Backup / restore">
+<button class="save-fab" id="backupFab" title="Backup / restore" style="display:none;">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
     <polyline points="7 10 12 15 17 10"></polyline>
@@ -268,7 +297,7 @@
 <div id="backupOverlay" class="backup-overlay" style="display:none;">
   <div class="backup-card">
     <h3>Backup &amp; restore</h3>
-    <p>If saving keeps failing, copy this text into Notes, email, or anywhere safe. Paste it back into the box below anytime to restore everything exactly as it was.</p>
+    <p>Your data now syncs to the cloud automatically. This is an extra manual backup — copy it somewhere safe anytime, and paste it back below to restore.</p>
     <textarea id="backupOutput" readonly></textarea>
     <button class="add-btn" id="copyBackupBtn">Copy to clipboard</button>
     <hr>
@@ -285,10 +314,18 @@
         <button class="reset-btn" id="restoreConfirmNo">Cancel</button>
       </div>
     </div>
+    <hr>
+    <div class="backup-actions">
+      <button class="reset-btn" id="signOutBtn">Sign out</button>
+    </div>
   </div>
 </div>
 
 <script>
+const SUPABASE_URL = 'https://vluoumoituqkqsxrnvaq.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsdW91bW9pdHVxa3FzeHJudmFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3ODE0NTAsImV4cCI6MjEwMzM1NzQ1MH0.QPAckZ6oXMn4hx_Wh_XlWgv5GxY6XMTDrWizbdswylU';
+let sb = null;
+let currentUser = null;
 const STORAGE_KEY = 'foundation-data';
 const PILLARS = [
   {key:'body', name:'Body', colorHex:'#C1623D'},
@@ -649,17 +686,36 @@ function pendingItems(){
   return items;
 }
 
-const hasClaudeStorage = (typeof window.storage !== 'undefined' && window.storage !== null);
 async function storageGet(key){
-  if(hasClaudeStorage) return window.storage.get(key);
-  const raw = localStorage.getItem(key);
-  if(raw === null) throw new Error('Key not found');
-  return {key, value: raw};
+  if(!sb || !currentUser) throw new Error('Not signed in');
+  try{
+    const { data, error } = await sb.from('foundation_data').select('data').eq('user_id', currentUser.id).maybeSingle();
+    if(error) throw error;
+    if(data && data.data){
+      const asString = JSON.stringify(data.data);
+      try{ localStorage.setItem(key, asString); }catch(e){}
+      return { value: asString };
+    }
+    const cached = localStorage.getItem(key);
+    if(cached) return { value: cached };
+    throw new Error('No data yet');
+  }catch(cloudErr){
+    const cached = localStorage.getItem(key);
+    if(cached) return { value: cached };
+    throw cloudErr;
+  }
 }
 async function storageSet(key, value){
-  if(hasClaudeStorage) return window.storage.set(key, value);
-  localStorage.setItem(key, value);
-  return {key, value};
+  try{ localStorage.setItem(key, value); }catch(e){}
+  if(!sb || !currentUser) throw new Error('Not signed in');
+  const parsed = JSON.parse(value);
+  const { error } = await sb.from('foundation_data').upsert({
+    user_id: currentUser.id,
+    data: parsed,
+    updated_at: new Date().toISOString()
+  });
+  if(error) throw error;
+  return { value };
 }
 async function loadData(){
   try{
@@ -1713,12 +1769,88 @@ if(restoreConfirmYes){
     }
   });
 }
-const restoreConfirmNo = document.getElementById('restoreConfirmNo');
-if(restoreConfirmNo){
-  restoreConfirmNo.addEventListener('click', ()=>{ restoreConfirmBox.style.display = 'none'; });
+const signOutBtn = document.getElementById('signOutBtn');
+if(signOutBtn){
+  signOutBtn.addEventListener('click', async ()=>{
+    backupOverlay.style.display = 'none';
+    await doLogout();
+  });
 }
 
-loadData();
+// ---- Auth + startup ----
+function showChrome(show){
+  ['manualSaveBtn','backupFab'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.display = show ? 'flex' : 'none';
+  });
+}
+function showAuthScreen(){
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  showChrome(false);
+}
+function showApp(){
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  showChrome(true);
+  loadData();
+}
+async function doLogin(){
+  const emailEl = document.getElementById('authEmail');
+  const passEl = document.getElementById('authPassword');
+  const errEl = document.getElementById('authError');
+  const btn = document.getElementById('authLoginBtn');
+  const email = emailEl.value.trim();
+  const password = passEl.value;
+  errEl.textContent = '';
+  if(!email || !password){ errEl.textContent = 'Enter your email and password.'; return; }
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+  try{
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if(error){ errEl.textContent = error.message; return; }
+    currentUser = data.user;
+    passEl.value = '';
+    showApp();
+  }catch(e){
+    errEl.textContent = 'Could not reach the login server. Check your connection.';
+  }finally{
+    btn.textContent = 'Sign in';
+    btn.disabled = false;
+  }
+}
+async function doLogout(){
+  try{ if(sb) await sb.auth.signOut(); }catch(e){}
+  currentUser = null;
+  state = null;
+  showAuthScreen();
+}
+async function bootstrap(){
+  if(typeof supabase === 'undefined' || !supabase.createClient){
+    document.getElementById('app').innerHTML = '<div class="loading">Couldn\'t load the login system. Check your connection and refresh.</div>';
+    document.getElementById('app').style.display = 'block';
+    return;
+  }
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const loginBtn = document.getElementById('authLoginBtn');
+  if(loginBtn) loginBtn.addEventListener('click', doLogin);
+  const passEl = document.getElementById('authPassword');
+  if(passEl) passEl.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter'){ ev.preventDefault(); doLogin(); } });
+  const emailEl = document.getElementById('authEmail');
+  if(emailEl) emailEl.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter'){ ev.preventDefault(); doLogin(); } });
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    if(session){
+      currentUser = session.user;
+      showApp();
+    }else{
+      showAuthScreen();
+    }
+  }catch(e){
+    showAuthScreen();
+  }
+}
+bootstrap();
 </script>
 </body>
 </html>
